@@ -14,7 +14,7 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Food OpenAPI",
+    "TITLE": "STEAK DREAM OpenAPI",
     "DESCRIPTION": "Описание нашего API в разработке...",
     'COMPONENT_SPLIT_REQUEST': True,
     "VERSION": "1.0.0",

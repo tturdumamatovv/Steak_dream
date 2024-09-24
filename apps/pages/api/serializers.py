@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.catalog.api.serializers import CategorySerializer
@@ -26,6 +27,7 @@ class BannerSerializer(serializers.ModelSerializer):
         model = Banner
         fields = ['title', 'type', 'image_desktop', 'image_mobile', 'link', 'is_active', 'created_at']
 
+    @extend_schema_field(serializers.DictField)
     def get_link(self, obj):
         if obj.type == 'category':
             if obj.category:
@@ -72,6 +74,7 @@ class HomePageSerializer(serializers.Serializer):
     main_page = MainPageSerializer()
     cash_back = serializers.SerializerMethodField()
 
+    @extend_schema_field(serializers.CharField)
     def get_cash_back(self, obj):
         return ''
     #     percents = PercentCashback.objects.all().first()
@@ -137,6 +140,7 @@ class ContactsSerializer(serializers.ModelSerializer):
         model = Contacts
         fields = ['phones', 'emails', 'social_links', 'addresses', 'payment_methods', 'static_pages']
 
+    @extend_schema_field(StaticPageSerializer(many=True))
     def get_static_pages(self, obj):
         return StaticPageSerializer(StaticPage.objects.all(), many=True).data
 
@@ -161,6 +165,7 @@ class StorySerializer(serializers.ModelSerializer):
         model = Story
         fields = ['image', 'type', 'link', 'created_at', ]
 
+    @extend_schema_field(serializers.DictField)
     def get_link(self, obj):
         if obj.type == 'category':
             if obj.category:
