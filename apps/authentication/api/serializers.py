@@ -1,10 +1,11 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.authentication.models import (
     User,
     UserAddress
 )
-from config import settings
+from core import settings
 
 
 class UserBonusSerializer(serializers.ModelSerializer):
@@ -48,6 +49,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 ret['profile_picture'] = settings.MEDIA_URL + 'profile_pictures/default-user.jpg'
         return ret
 
+    @extend_schema_field(serializers.BooleanField)
     def get_has_profile_picture(self, instance):
         return bool(instance.profile_picture)
 

@@ -4,7 +4,7 @@ from rest_framework import generics, status
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 
-from apps.product.models import Category
+from apps.catalog.models import Category
 from apps.pages.models import (
     Banner,
     MainPage,
@@ -111,6 +111,7 @@ class BannersView(ListAPIView):
 
 class StoriesView(ListAPIView):
     queryset = Stories.objects.filter(is_active=True)
+    serializer_class = StoriesSerializer
 
     def get_serializer(self, *args, **kwargs):
         return StoriesSerializer(*args, **kwargs, context={'request': self.request})

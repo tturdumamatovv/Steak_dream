@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.product.models import Category
-from apps.orders.models import PercentCashback
+from apps.catalog.api.serializers import CategorySerializer
+# from apps.orders.models import PercentCashback
 from apps.pages.models import (
     Banner,
     OrderTypes,
@@ -12,14 +12,11 @@ from apps.pages.models import (
     Address,
     PaymentMethod,
     Contacts,
-    StaticPage, Stories, Story, StoriesUserCheck
+    StaticPage,
+    Stories,
+    Story,
+    StoriesUserCheck
 )
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['slug', 'name', 'description', 'image']
 
 
 class BannerSerializer(serializers.ModelSerializer):
@@ -76,13 +73,14 @@ class HomePageSerializer(serializers.Serializer):
     cash_back = serializers.SerializerMethodField()
 
     def get_cash_back(self, obj):
-        percents = PercentCashback.objects.all().first()
-        if not percents:
-            percents = PercentCashback.objects.create(mobile_percent=5, web_percent=3)
-        return {
-            'web': percents.web_percent,
-            'mobile': percents.mobile_percent,
-        }
+        return ''
+    #     percents = PercentCashback.objects.all().first()
+    #     if not percents:
+    #         percents = PercentCashback.objects.create(mobile_percent=5, web_percent=3)
+    #     return {
+    #         'web': percents.web_percent,
+    #         'mobile': percents.mobile_percent,
+    #     }
 
 
 class MetaDataSerializer(serializers.ModelSerializer):
@@ -157,12 +155,11 @@ class LayOutSerializer(serializers.ModelSerializer):
 
 
 class StorySerializer(serializers.ModelSerializer):
-
     link = serializers.SerializerMethodField()
 
     class Meta:
         model = Story
-        fields = ['image', 'type', 'link', 'created_at',]
+        fields = ['image', 'type', 'link', 'created_at', ]
 
     def get_link(self, obj):
         if obj.type == 'category':
@@ -201,6 +198,6 @@ class StoriesSerializer(serializers.ModelSerializer):
         else:
             return False
 
+
 class StoriesCheckSerializer(serializers.Serializer):
     stories = serializers.IntegerField(help_text="Enter your story id here")
-

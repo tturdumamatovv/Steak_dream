@@ -1,9 +1,10 @@
+from colorfield.fields import ColorField
 from django.db import models
 from django.utils.text import slugify
 from unidecode import unidecode
 
 from apps.common.mixins import ImageProcessingMixin
-
+from django.utils.translation import gettext_lazy as _
 # Create your models here.
 
 
@@ -26,14 +27,13 @@ class Category(models.Model, ImageProcessingMixin):
 
         if not self.slug:
             self.slug = slugify(unidecode(self.title))
-        super().save(*args, **kwargs)
 
         super().save(*args, **kwargs)
 
 
 class Product(models.Model, ImageProcessingMixin):
     supplier_id = models.CharField(max_length=50, null=True, blank=True, unique=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', null=True, blank=True)
     title = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=12, decimal_places=6)
     quantity = models.FloatField(default=0.0)
