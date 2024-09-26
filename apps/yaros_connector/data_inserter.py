@@ -39,7 +39,6 @@ class APIInserter:
         if isinstance(product_data, str):
             product_data = json.loads(product_data)
 
-        # Получаем существующие supplier_id из базы данных
         existing_product_ids = set(Product.objects.values_list('supplier_id', flat=True))
 
         product_objects = []
@@ -65,7 +64,6 @@ class APIInserter:
                     activity=product['ACTIVITY']
                 ))
 
-        # Вставляем только новые записи
         Product.objects.bulk_create(product_objects)
 
     def update_all_products(self):
