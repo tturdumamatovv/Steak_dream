@@ -29,6 +29,7 @@ class BannerSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.DictField)
     def get_link(self, obj):
+
         if obj.type == 'category':
             if obj.category:
                 result = {

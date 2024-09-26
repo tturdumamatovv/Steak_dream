@@ -69,23 +69,23 @@ class StaticPageDetailView(generics.RetrieveAPIView):
             if slug == 'about-us':
                 instance = StaticPage.objects.create(
                     title='О нас',
-                    title_ru='О нас',
-                    title_ky='Биз жөнүндө',
+                    # title_ru='О нас',
+                    # title_ky='Биз жөнүндө',
 
                     description='О нас',
-                    description_ru='О нас',
-                    description_ky='Биз жөнүндө',
+                    # description_ru='О нас',
+                    # description_ky='Биз жөнүндө',
                     slug="about-us"
                 )
             elif slug == 'delivery':
                 instance = StaticPage.objects.create(
                     title='Доставка',
-                    title_ru='Доставка',
-                    title_ky='Доставка',
+                    # title_ky_ru='Доставка',
+                    # title_ky='Доставка',
 
                     description='Доставка',
-                    description_ru='Доставка',
-                    description_ky='Доставка',
+                    # description_ru='Доставка',
+                    # description_ky='Доставка',
                     slug="delivery"
                 )
 

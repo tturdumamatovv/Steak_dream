@@ -13,4 +13,5 @@ class CategoryAdmin(ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(ModelAdmin):
     list_display = ['title', 'category', 'price', 'quantity', 'created_at']
+    search_fields = ['title', 'supplier_id',]
     list_filter = ['category', 'created_at']
