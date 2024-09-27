@@ -1,7 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 
 # Create your models here.
+User = get_user_model()
 
 
 class Order(models.Model):
@@ -18,13 +20,13 @@ class Order(models.Model):
     ])
     change = models.FloatField()
     total = models.FloatField()
-    user = models.ForeignKey('authentication.User', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     addresses = models.ForeignKey('authentication.UserAddress', on_delete=models.CASCADE)
     comment = models.TextField()
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey('orders.Order', on_delete=models.CASCADE)
+    order = models.ForeignKey('orders.Order', on_delete=models.CASCADE, related_name='order_items')
     product = models.ForeignKey('catalog.Product', on_delete=models.CASCADE)
     quantity = models.FloatField()
     amount = models.FloatField()
