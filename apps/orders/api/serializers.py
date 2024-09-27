@@ -7,8 +7,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ['product', 'quantity', 'amount']
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True, source='orderitem_set')
+    order_items = OrderItemSerializer(many=True)  # Изменено на order_items
 
     class Meta:
         model = Order
-        fields = ['id', 'type', 'infosystem', 'status', 'pay_method', 'change', 'total', 'addresses', 'comment', 'items']
+        fields = ['type', 'infosystem', 'status', 'pay_method', 'change', 'total', 'addresses', 'comment', 'order_items']  # Добавлено order_items
