@@ -16,7 +16,7 @@ from apps.pages.models import (
     OrderTypes,
     MainPage,
     Stories,
-    Story
+    Story, BonusPage
 )
 
 
