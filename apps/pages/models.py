@@ -305,3 +305,40 @@ class StoriesUserCheck(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stories_user_check')
     stories = models.ForeignKey(Stories, on_delete=models.CASCADE, related_name='stories_user_check')
     created_at = models.DateTimeField(verbose_name="Дата создания", auto_now_add=True, blank=True, null=True)
+
+
+
+class BonusPage(SingletonModel):
+    mobile_app_image = models.FileField(upload_to="bonus_pages", verbose_name="Мобильное приложение", blank=True,
+                                        null=True)
+    mobile_app_text = models.TextField(verbose_name="Текст приложения", blank=True, null=True)
+    mobile_app_color = ColorField(default='#000000', verbose_name="Цвет карточки приложения", blank=True, null=True)
+    bonus_image = models.FileField(upload_to="bonus_pages", verbose_name="Картинка карточки бонусов", blank=True,
+                                   null=True)
+    bonus_title = models.CharField(max_length=255, verbose_name="Заголовок карточки бонусов", blank=True, null=True)
+    bonus_text = models.TextField(verbose_name="Текст карточки бонусов", blank=True, null=True)
+    bonus_color = ColorField(default='#000000', verbose_name="Цвет карточки бонусов", blank=True, null=True)
+    bottom_card_text = models.TextField(verbose_name="Нижняя часть карточки", blank=True, null=True)
+    bottom_cart_color = ColorField(default='#000000', verbose_name="Цвет нижней части карточки", blank=True, null=True)
+
+    def __str__(self):
+        return "Бонусная страница"
+
+    class Meta:
+        verbose_name = "Бонусная страница"
+        verbose_name_plural = "Бонусная страница"
+
+
+class Advertisement(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Заголовок")
+    content = models.TextField(verbose_name="Содержание")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    is_active = models.BooleanField(default=True, verbose_name="Активно")
+    image = models.ImageField(upload_to='advertisements/', blank=True, null=True, verbose_name="Изображение")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Реклама"
+        verbose_name_plural = "Рекламные объявления"

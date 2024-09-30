@@ -124,3 +124,8 @@ class StoryInline(TabularInline):
 @admin.register(Stories)
 class StoriesAdmin(ModelAdmin):
     inlines = [StoryInline]
+
+
+@admin.register(BonusPage)
+class BonusPageAdmin(ModelAdmin):
+    pass

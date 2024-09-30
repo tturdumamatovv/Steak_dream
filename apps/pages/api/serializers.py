@@ -16,7 +16,7 @@ from apps.pages.models import (
     StaticPage,
     Stories,
     Story,
-    StoriesUserCheck
+    StoriesUserCheck, BonusPage
 )
 
 
@@ -207,3 +207,9 @@ class StoriesSerializer(serializers.ModelSerializer):
 
 class StoriesCheckSerializer(serializers.Serializer):
     stories = serializers.IntegerField(help_text="Enter your story id here")
+
+
+class BonuspageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BonusPage
+        fields = '__all__'
