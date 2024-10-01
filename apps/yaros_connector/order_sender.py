@@ -59,7 +59,6 @@ class APIOrderSender:
             'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive'
         }
-        print(order_data)
-
         response = requests.post(self.url, json=order_data, headers=headers, auth=(self.username, self.password))
-        return response
+        print(response.text)
+        return response.text
