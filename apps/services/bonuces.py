@@ -10,12 +10,15 @@ def calculate_bonus_points(order_total, delivery_fee, order_source):
 
     BONUS_PERCENTAGE_MOBILE = percents.mobile_percent
     BONUS_PERCENTAGE_WEB = percents.web_percent
+    BONUS_PERCENTAGE_MAGAZINE = percents.magazine_percent
 
     total_order_amount = order_total - delivery_fee
     if order_source == 'mobile':
         bonus_percentage = BONUS_PERCENTAGE_MOBILE
     elif order_source == 'web':
         bonus_percentage = BONUS_PERCENTAGE_WEB
+    elif order_source == 'magazine':
+        bonus_percentage = BONUS_PERCENTAGE_MAGAZINE
     else:
         bonus_percentage = Decimal('0.0')
 

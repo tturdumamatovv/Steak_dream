@@ -19,14 +19,8 @@ COPY requirements/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the project files into the container
-COPY . /app
+COPY . .
 
 # Ensure settings module is visible to Django
 ENV DJANGO_SETTINGS_MODULE=core.settings
 
-# Collect static files and apply migrations
-RUN python manage.py collectstatic --no-input && \
-    python manage.py migrate
-
-# Start the application
-CMD ["daphne", "core.asgi:application", "-b", "0.0.0.0", "-p", "8001"]

@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.contrib.auth import get_user_model
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin, TabularInline
 
@@ -16,7 +17,7 @@ from apps.pages.models import (
     OrderTypes,
     MainPage,
     Stories,
-    Story, BonusPage, Advertisement
+    Story, BonusPage, Advertisement, SiteSettings
 )
 from apps.services.firebase_notification import send_firebase_notification
 
@@ -132,6 +133,7 @@ class BonusPageAdmin(ModelAdmin):
     pass
 
 
+User = get_user_model()
 
 
 @admin.register(Advertisement)
@@ -185,3 +187,7 @@ class AdvertisementAdmin(ModelAdmin):
     send_advertisement.short_description = "Отправить выбранную рекламу всем пользователям"
 
 
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(ModelAdmin):
+    pass
