@@ -6,10 +6,11 @@ from django.db import models
 from geopy.distance import geodesic
 from django.core.validators import MinLengthValidator
 from django.utils.translation import gettext_lazy as _
+
+from apps.authentication.models import User
 from apps.pages.models import SingletonModel
 
 # Create your models here.
-User = get_user_model()
 
 
 
@@ -61,6 +62,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     addresses = models.ForeignKey('authentication.UserAddress', on_delete=models.CASCADE)
     comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True, blank=True)
 
 
 class OrderItem(models.Model):

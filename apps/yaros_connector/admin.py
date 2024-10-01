@@ -13,8 +13,6 @@ class SupplierAdmin(ModelAdmin):
     pass
 
     def run_api_insert(self, request, queryset):
-        from .tasks import demo_task
-        demo_task("Hello, Background Tasks!", repeat=5)
         for supplier in queryset:
             inserter = APIInserter(supplier=supplier)
             inserter.create()

@@ -26,7 +26,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    phone_number = models.CharField(max_length=13, unique=True, verbose_name=_('Номер телефона'))
+    phone_number = models.CharField(max_length=14, unique=True, verbose_name=_('Номер телефона'))
     code = models.CharField(max_length=4, blank=True, null=True, verbose_name=_('Код'))
     is_staff = models.BooleanField(default=False, verbose_name=_('Работник'))
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True, max_length=255,

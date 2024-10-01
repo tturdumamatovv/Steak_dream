@@ -11,6 +11,9 @@ from apps.services.firebase_notification import send_firebase_notification
 from apps.services.get_coordinates import get_coordinates
 from .models import Restaurant, Order
 
+from apps.yaros_connector.order_sender import APIOrderSender  # Импортируем класс отправки заказа
+from ..yaros_connector.models import Supplier
+
 
 @receiver(pre_save, sender=Restaurant)
 def set_coordinates(sender, instance, **kwargs):
@@ -47,33 +50,34 @@ def check_status_change(sender, instance, **kwargs):
         #     instance.user.last_order = datetime.now()
         #     instance.user.save()
         #     apply_bonus_points(instance.user, instance.total_bonus_amount)
-        if instance.user:
-            if instance.user.fcm_token:
-                readable_status = get_readable_order_status(instance.order_status)
+        try:
+            if instance.user:
+                if instance.user.fcm_token:
+                    readable_status = get_readable_order_status(instance.order_status)
 
-                data = {
-                    "order_id": str(instance.id),
-                    "status": str(readable_status),
-                    "date": str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S")),
-                    "type": "notificationPage"
+                    data = {
+                        "order_id": str(instance.id),
+                        "status": str(readable_status),
+                        "date": str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S")),
+                        "type": "notificationPage"
 
-                }
-                print(data)
-                try:
-                    send_firebase_notification(instance.user.fcm_token,
-                                               "Изменение статуса заказа",
-                                               f"Статус вашего заказа {instance.id} изменен на {instance.order_status}",
-                                               data=data)
-                except Exception as e:
-                    print(f"Ошибка при отправке уведомления: {e}")
+                    }
+                    print(data)
+                    try:
+                        send_firebase_notification(instance.user.fcm_token,
+                                                   "Изменение статуса заказа",
+                                                   f"Статус вашего заказа {instance.id} изменен на {instance.order_status}",
+                                                   data=data)
+                    except Exception as e:
+                        print(f"Ошибка при отправке уведомления: {e}")
+        except Exception as e:
+            print(f"Ошибка при отправке уведомления: {e}")
 
 
 @receiver(post_save, sender=Order)
 def order_created(sender, instance, created, **kwargs):
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        "orders_notifications", {
-            "type": "send_notification",
-            "message": f"Новый заказ №: {instance.id}"
-        }
-    )
+    if created:
+        supplier = Supplier.objects.first()
+        order_sender = APIOrderSender(order=instance, supplier=supplier)
+        response = order_sender.prepare_order(instance)  # Отправляем заказ
+        print("Ответ от Ярос:", response)  # Логируем ответ от Ярос

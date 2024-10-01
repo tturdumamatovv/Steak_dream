@@ -1,49 +1,65 @@
-from apps.yaros_connector.models import Supplier
 import requests
 import json
+from datetime import datetime
 
 
 class APIOrderSender:
-    def __init__(self, supplier=Supplier, order=None):
+    def __init__(self, supplier, order=None):
         self.supplier = supplier
-        self.url = self.supplier.url + self.supplier.publication + 'orders/'
+        self.url = str(self.supplier.url) + str(self.supplier.publication) + 'orders/'
+        self.infosystem = self.supplier.infosystem
+        self.username = self.supplier.username
+        self.password = self.supplier.password
         if order:
             self.prepare_order(order)
 
     def prepare_order(self, order):
-        pass
+        items = order.order_items.all()
+        item_data = []
+        for item in items:
+            item_price = item.amount / item.quantity if item.quantity else 0
+            item_data.append({
+                "product_id": str(item.product.supplier_id),
+                "quantity": "{:.2f}".format(item.quantity),
+                "price": "{:.2f}".format(item_price),
+                "amount": "{:.2f}".format(item.amount)
+            })
 
-    def send_order(self, order):
-        # Формируем JSON-объект для отправки
+        timestamp = int(order.created_at.timestamp())
         order_data = {
             "orders": [
                 {
-                    "id": order.id,
+                    "id": '000066',
                     "type": order.type,
-                    "infosystem": order.infosystem,
-                    "date": order.date,
+                    "infosystem": self.infosystem,
+                    "date": str(timestamp),
                     "status": order.status,
                     "pay_method": order.pay_method,
-                    "change": order.change,
-                    "total": order.total,
+                    "change": "{:.2f}".format(order.change),
+                    "total": "{:.2f}".format(order.total),
                     "user": {
-                        "name": order.user.username,  # Предполагается, что у пользователя есть поле username
-                        "phone": order.user.phone  # Предполагается, что у пользователя есть поле phone
+                        "name": order.user.full_name,
+                        "phone": order.user.phone_number
                     },
-                    "address": order.addresses.address,  # Предполагается, что у адреса есть поле address
+                    "address": order.addresses.city,
                     "comment": order.comment,
-                    "items": [
-                        {
-                            "product_id": item.product.id,  # Предполагается, что у продукта есть поле id
-                            "quantity": str(item.quantity),
-                            "price": str(item.amount / item.quantity),  # Предполагается, что amount делится на quantity
-                            "amount": str(item.amount)
-                        } for item in order.order_items.all()  # Предполагается, что у заказа есть связанные элементы
-                    ]
+                    "items": item_data
                 }
             ]
         }
 
-        # Отправляем запрос на API
-        response = requests.post(self.url, json=order_data)
-        return response.json()  # Возвращаем ответ от API
+        self.send_order(order_data)
+
+    def send_order(self, order_data):
+        headers = {
+            'Cache-Control': 'no-cache',
+            'Content-Type': 'application/json',
+            'User-Agent': 'CustomUserAgent/1.0',
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive'
+        }
+        print(order_data)
+
+        response = requests.post(self.url, json=order_data, headers=headers, auth=(self.username, self.password))
+        return response

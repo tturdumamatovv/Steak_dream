@@ -41,9 +41,9 @@ class UserLoginView(generics.CreateAPIView):
         phone_number = request.data.get('phone_number')
         if not phone_number:
             return Response({'error': 'Phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        if not phone_number.startswith("+996"):
-            return Response({'error': 'Phone number must start with "+996".'}, status=status.HTTP_400_BAD_REQUEST)
-        elif len(phone_number) != 13:
+        # if not phone_number.startswith("+996"):
+        #     return Response({'error': 'Phone number must start with "+996".'}, status=status.HTTP_400_BAD_REQUEST)
+        if len(phone_number) != 13:
             return Response({'error': 'Phone number must be 13 digits long including the country code.'},
                             status=status.HTTP_400_BAD_REQUEST)
         elif not phone_number[4:].isdigit():

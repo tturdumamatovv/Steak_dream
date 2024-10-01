@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from apps.orders.models import Order, OrderItem
 
@@ -17,7 +18,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         order_items_data = validated_data.pop('order_items')  # Извлекаем данные о предметах заказа
-        order = Order.objects.create(**validated_data)  # Создаем заказ
-        for item_data in order_items_data:
-            OrderItem.objects.create(order=order, **item_data)  # Создаем предметы заказа
+        with transaction.atomic():
+            order = Order.objects.create(**validated_data)  # Создаем заказ
+            for item_data in order_items_data:
+                OrderItem.objects.create(order=order, **item_data)  # Создаем предметы заказа
         return order
