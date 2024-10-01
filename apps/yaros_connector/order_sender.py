@@ -29,7 +29,7 @@ class APIOrderSender:
         order_data = {
             "orders": [
                 {
-                    "id": '000066',
+                    "id": order.id,
                     "type": order.type,
                     "infosystem": self.infosystem,
                     "date": str(timestamp),
