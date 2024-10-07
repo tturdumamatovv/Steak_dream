@@ -86,3 +86,8 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('fcm_token', 'receive_notifications')
+
+
+class QRCodeValidationSerializer(serializers.Serializer):
+    qr_url = serializers.URLField(required=True)
+    bonus_amount = serializers.DecimalField(max_digits=9, decimal_places=2, required=True)

@@ -52,6 +52,7 @@ class APIInserter:
                 except KeyError:
                     price = 0
                 product_objects.append(Product(
+                    supplier_integration=self.supplier,
                     supplier_id=product['ID'],
                     category=category,
                     title=product['TITLE'],

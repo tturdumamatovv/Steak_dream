@@ -1,4 +1,12 @@
+import os
+import uuid
+from io import BytesIO
+from urllib.parse import urlparse, parse_qs
+
+import qrcode
+from django.core.files.base import ContentFile
 from django.db import models
+from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -40,6 +48,9 @@ class User(AbstractBaseUser, PermissionsMixin):
                                                 blank=True)
     last_order = models.DateTimeField(null=True, blank=True, verbose_name=_("Последний заказ"))
     bonus = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Бонусы'), null=True, blank=True)
+    qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True, verbose_name=_('QR Код'))
+    secret_key = models.CharField(max_length=255, default='', verbose_name=_('Секретный ключ'))
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'phone_number'
@@ -70,6 +81,65 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = _('Пользователь')
         verbose_name_plural = _("Пользователи")
+
+    def generate_qr_code(self):
+        url = f"qr/check/qr/user/{self.id}/?secret_key={self.secret_key}"
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        filename = f'qr_code_{self.id}.png'
+        self.qr_code.save(filename, ContentFile(buffer.getvalue()), save=False)
+
+    def generate_new_secret_key(self):
+        return str(uuid.uuid4())  # Генерация нового секретного ключа
+
+    def get_and_update_qr(self):
+        current_qr_code = self.qr_code
+
+        # Удаляем старый QR-код из файловой системы, если он существует
+        if current_qr_code:
+            if os.path.isfile(current_qr_code.path):
+                os.remove(current_qr_code.path)
+
+        # Генерируем новый секретный ключ
+        self.secret_key = self.generate_new_secret_key()
+        self.generate_qr_code()  # Генерируем новый QR-код
+        self.save()  # Сохраняем изменения
+
+        return current_qr_code.url if current_qr_code else None
+
+    def check_secret_key(self, qr_url):
+        # Извлечение параметров из QR-кода
+        parsed_url = urlparse(qr_url)
+        query_params = parse_qs(parsed_url.query)
+
+        # Извлечение ID пользователя и секретного ключа
+        user_id = parsed_url.path.split('/')[-1]  # Предполагается, что ID - последний сегмент пути
+        provided_secret_key = query_params.get('secret_key', [None])[0]
+
+        # Проверка наличия пользователя
+        user = get_object_or_404(User, id=user_id)
+
+        # Сравнение секретного ключа
+        if user.secret_key == provided_secret_key:
+            return True  # Ключи совпадают
+        else:
+            return False  # Ключи не совпадают
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.qr_code:
+            self.generate_qr_code()
+            super().save(*args, **kwargs)
 
 
 class UserAddress(models.Model):

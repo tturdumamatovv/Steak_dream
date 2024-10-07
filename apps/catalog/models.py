@@ -5,6 +5,10 @@ from unidecode import unidecode
 
 from apps.common.mixins import ImageProcessingMixin
 from django.utils.translation import gettext_lazy as _
+
+from apps.yaros_connector.models import Supplier
+
+
 # Create your models here.
 
 
@@ -32,6 +36,7 @@ class Category(models.Model, ImageProcessingMixin):
 
 
 class Product(models.Model, ImageProcessingMixin):
+    supplier_integration = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True, blank=True)
     supplier_id = models.CharField(max_length=50, null=True, blank=True, unique=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', null=True, blank=True)
     title = models.CharField(max_length=255)

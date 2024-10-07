@@ -1,5 +1,9 @@
+from urllib.parse import urlparse
+
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth.models import User
@@ -16,7 +20,7 @@ from .serializers import (
     UserAddressSerializer,
     UserAddressUpdateSerializer,
     NotificationSerializer,
-    UserBonusSerializer
+    UserBonusSerializer, QRCodeValidationSerializer
 )
 from apps.authentication.utils import (
     send_sms,
@@ -214,3 +218,40 @@ class NotificationSettingsAPIView(generics.RetrieveUpdateAPIView):
 
         serializer = self.get_serializer(user)
         return Response(serializer.data)
+
+
+class QRCodeValidationView(APIView):
+    def post(self, request):
+        serializer = QRCodeValidationSerializer(data=request.data)
+        if serializer.is_valid():
+            qr_url = serializer.validated_data['qr_url']
+            bonus_amount = serializer.validated_data['bonus_amount']
+
+            # Извлите ID пользователя из QR-кода
+            user_id = urlparse(qr_url).path.split('/')[-1]  # Предполагается, что ID - последний сегмент пути
+
+            # Получаем пользователя по ID
+            user = get_object_or_404(User, id=user_id)
+
+            # Проверяем QR-код
+            if user.check_secret_key(qr_url):
+                # Проверяем, достаточно ли бонусов
+                if user.bonus >= bonus_amount:
+                    # Списываем бонусы
+                    user.bonus -= bonus_amount
+                    user.save()  # Сохраняем изменения
+
+                    # Обновляем QR-код и секретный ключ
+                    old_qr_code_url = user.get_and_update_qr()
+
+                    return Response({
+                        'status': 'success',
+                        'message': 'Ключ действителен!',
+                        'old_qr_code_url': old_qr_code_url,
+                        'remaining_bonus': user.bonus
+                    })
+                else:
+                    return Response({'status': 'error', 'message': 'Недостаточно бонусов!'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'status': 'error', 'message': 'Неверный ключ!'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
