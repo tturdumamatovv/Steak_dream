@@ -60,5 +60,4 @@ class APIOrderSender:
             'Connection': 'keep-alive'
         }
         response = requests.post(self.url, json=order_data, headers=headers, auth=(self.username, self.password))
-        print(response.text)
         return response.text
