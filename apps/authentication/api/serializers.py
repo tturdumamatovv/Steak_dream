@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from apps.authentication.models import (
     User,
-    UserAddress
+    UserAddress, BonusTransaction
 )
 from core import settings
 
@@ -11,7 +11,7 @@ from core import settings
 class UserBonusSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['bonus']
+        fields = ['bonus', 'qr_code']
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -35,7 +35,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'phone_number', 'profile_picture', 'full_name', 'date_of_birth',
-                  'email', 'first_visit', 'has_profile_picture', 'receive_notifications')
+                  'email', 'first_visit', 'has_profile_picture', 'receive_notifications', 'bonus', 'qr_code')
         read_only = ('receive_notifications',)
 
     def to_representation(self, instance):
@@ -88,6 +88,27 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = ('fcm_token', 'receive_notifications')
 
 
-class QRCodeValidationSerializer(serializers.Serializer):
-    qr_url = serializers.URLField(required=True)
-    bonus_amount = serializers.DecimalField(max_digits=9, decimal_places=2, required=True)
+class UserBalanceSerializer(serializers.ModelSerializer):
+    bonus_to_deduct = serializers.DecimalField(max_digits=9, decimal_places=2, required=False, default=10)
+
+    class Meta:
+        model = User
+        fields = ['id', 'phone_number', 'bonus', 'bonus_to_deduct']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'phone_number', 'bonus', 'qr_code']
+
+
+class BonusTransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BonusTransaction
+        fields = ['user', 'bonus_spent', 'bonus_earned', 'created_at']
+
+
+class QRCodeRequestSerializer(serializers.Serializer):
+    qr_data = serializers.CharField()
+    spent_bonuses = serializers.DecimalField(max_digits=10, decimal_places=2)
+    earned_bonuses = serializers.DecimalField(max_digits=10, decimal_places=2)

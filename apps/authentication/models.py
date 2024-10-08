@@ -13,6 +13,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin
 )
+from django.conf import settings
 
 
 class CustomUserManager(BaseUserManager):
@@ -47,30 +48,40 @@ class User(AbstractBaseUser, PermissionsMixin):
     receive_notifications = models.BooleanField(default=False, verbose_name=_('Получать уведомления'), null=True,
                                                 blank=True)
     last_order = models.DateTimeField(null=True, blank=True, verbose_name=_("Последний заказ"))
-    bonus = models.DecimalField(max_digits=9, decimal_places=2, verbose_name=_('Бонусы'), null=True, blank=True)
-    qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True, verbose_name=_('QR Код'))
-    secret_key = models.CharField(max_length=255, default='', verbose_name=_('Секретный ключ'))
+    bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    qr_code = models.ImageField(upload_to='qr_codes', blank=True, null=True)
+    secret_key = models.UUIDField(default=uuid.uuid4, editable=False)
 
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
-    groups = models.ManyToManyField(
-        'auth.Group',
-        verbose_name='groups',
-        blank=True,
-        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
-        related_name="user_set_custom",
-        related_query_name="user",
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        verbose_name='user permissions',
-        blank=True,
-        help_text='Specific permissions for this user.',
-        related_name="user_set_custom",
-        related_query_name="user",
-    )
+
+    def save(self, *args, **kwargs):
+        self.generate_qr_code()
+        super().save(*args, **kwargs)
+
+    def generate_qr_code(self):
+        if self.pk and self.qr_code:
+            try:
+                old_instance = User.objects.get(pk=self.pk)
+                if old_instance.qr_code and os.path.isfile(old_instance.qr_code.path):
+                    os.remove(old_instance.qr_code.path)  # Удаляем старый файл
+            except User.DoesNotExist:
+                pass  # Если пользователь новый, пропускаем
+
+        # Генерация нового QR-кода
+        qr_data = f"{self.phone_number}%{self.secret_key}"
+        qr_img = qrcode.make(qr_data)
+        buffer = BytesIO()
+        qr_img.save(buffer, format="PNG")
+        file_name = f"qr_code_{self.phone_number}.png"
+        self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
+
+    def regenerate_secret_key(self):
+        self.secret_key = uuid.uuid4()
+        self.generate_qr_code()
+        self.save()
 
     def get_admin_url(self):
         return f"/admin/authentication/user/{self.id}/change/"
@@ -81,65 +92,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = _('Пользователь')
         verbose_name_plural = _("Пользователи")
-
-    def generate_qr_code(self):
-        url = f"qr/check/qr/user/{self.id}/?secret_key={self.secret_key}"
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
-        qr.add_data(url)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
-
-        buffer = BytesIO()
-        img.save(buffer, format='PNG')
-        filename = f'qr_code_{self.id}.png'
-        self.qr_code.save(filename, ContentFile(buffer.getvalue()), save=False)
-
-    def generate_new_secret_key(self):
-        return str(uuid.uuid4())  # Генерация нового секретного ключа
-
-    def get_and_update_qr(self):
-        current_qr_code = self.qr_code
-
-        # Удаляем старый QR-код из файловой системы, если он существует
-        if current_qr_code:
-            if os.path.isfile(current_qr_code.path):
-                os.remove(current_qr_code.path)
-
-        # Генерируем новый секретный ключ
-        self.secret_key = self.generate_new_secret_key()
-        self.generate_qr_code()  # Генерируем новый QR-код
-        self.save()  # Сохраняем изменения
-
-        return current_qr_code.url if current_qr_code else None
-
-    def check_secret_key(self, qr_url):
-        # Извлечение параметров из QR-кода
-        parsed_url = urlparse(qr_url)
-        query_params = parse_qs(parsed_url.query)
-
-        # Извлечение ID пользователя и секретного ключа
-        user_id = parsed_url.path.split('/')[-1]  # Предполагается, что ID - последний сегмент пути
-        provided_secret_key = query_params.get('secret_key', [None])[0]
-
-        # Проверка наличия пользователя
-        user = get_object_or_404(User, id=user_id)
-
-        # Сравнение секретного ключа
-        if user.secret_key == provided_secret_key:
-            return True  # Ключи совпадают
-        else:
-            return False  # Ключи не совпадают
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if not self.qr_code:
-            self.generate_qr_code()
-            super().save(*args, **kwargs)
 
 
 class UserAddress(models.Model):
@@ -164,3 +116,11 @@ class UserAddress(models.Model):
 
     def __str__(self):
         return f'{self.city}'  # - {self.street} {self.house_number}'
+
+
+class BonusTransaction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    transaction_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    bonus_spent = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    bonus_earned = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)

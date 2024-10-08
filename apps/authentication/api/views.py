@@ -1,17 +1,18 @@
-from urllib.parse import urlparse
-
-from django.shortcuts import get_object_or_404
+from django.conf import settings
+from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from django.contrib.auth.models import User
-from django.conf import settings
-
 from apps.authentication.models import (
     User,
-    UserAddress
+    UserAddress, BonusTransaction
+)
+from apps.authentication.utils import (
+    send_sms,
+    generate_confirmation_code
 )
 from .serializers import (
     CustomUserSerializer,
@@ -20,11 +21,7 @@ from .serializers import (
     UserAddressSerializer,
     UserAddressUpdateSerializer,
     NotificationSerializer,
-    UserBonusSerializer, QRCodeValidationSerializer
-)
-from apps.authentication.utils import (
-    send_sms,
-    generate_confirmation_code
+    UserBonusSerializer, QRCodeRequestSerializer
 )
 
 
@@ -118,6 +115,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        print(self.request.user)
         return self.request.user
 
     def put(self, request, *args, **kwargs):
@@ -136,11 +134,6 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
             instance.first_visit = False
             instance.save()
 
-        return Response(serializer.data)
-
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
@@ -220,38 +213,45 @@ class NotificationSettingsAPIView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
 
-class QRCodeValidationView(APIView):
+class UseBonusesView(APIView):
+
+    @extend_schema(
+        request=QRCodeRequestSerializer,
+        responses={200: 'Bonuses used successfully'}
+    )
     def post(self, request):
-        serializer = QRCodeValidationSerializer(data=request.data)
+        serializer = QRCodeRequestSerializer(data=request.data)
         if serializer.is_valid():
-            qr_url = serializer.validated_data['qr_url']
-            bonus_amount = serializer.validated_data['bonus_amount']
+            qr_data = serializer.validated_data['qr_data']
+            spent_bonuses = serializer.validated_data['spent_bonuses']
+            earned_bonuses = serializer.validated_data['earned_bonuses']
 
-            # Извлите ID пользователя из QR-кода
-            user_id = urlparse(qr_url).path.split('/')[-1]  # Предполагается, что ID - последний сегмент пути
+            try:
+                phone_number, secret_key = qr_data.split('%')
+                user = User.objects.get(phone_number=phone_number, secret_key=secret_key)
 
-            # Получаем пользователя по ID
-            user = get_object_or_404(User, id=user_id)
+                if user.bonus < spent_bonuses:
+                    return Response({"error": "Insufficient bonuses"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Проверяем QR-код
-            if user.check_secret_key(qr_url):
-                # Проверяем, достаточно ли бонусов
-                if user.bonus >= bonus_amount:
-                    # Списываем бонусы
-                    user.bonus -= bonus_amount
-                    user.save()  # Сохраняем изменения
+                user.bonus -= spent_bonuses
+                user.bonus += earned_bonuses
+                user.regenerate_secret_key()
 
-                    # Обновляем QR-код и секретный ключ
-                    old_qr_code_url = user.get_and_update_qr()
+                BonusTransaction.objects.create(
+                    user=user,
+                    bonus_spent=spent_bonuses,
+                    bonus_earned=earned_bonuses
+                )
 
-                    return Response({
-                        'status': 'success',
-                        'message': 'Ключ действителен!',
-                        'old_qr_code_url': old_qr_code_url,
-                        'remaining_bonus': user.bonus
-                    })
-                else:
-                    return Response({'status': 'error', 'message': 'Недостаточно бонусов!'}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({'status': 'error', 'message': 'Неверный ключ!'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                user.save()
+
+                return Response({
+                    'message': 'Bonuses used successfully',
+                    'new_bonus': user.bonus,
+                    'new_qr_code': user.qr_code.url,
+                }, status=status.HTTP_200_OK)
+
+            except User.DoesNotExist:
+                return Response({"error": "Invalid QR code"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

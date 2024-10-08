@@ -9,9 +9,9 @@ from apps.authentication.api.views import (
     UserAddressDeleteAPIView,
     UserDeleteAPIView,
     NotificationSettingsAPIView,
-    UserBonusView,
-    QRCodeValidationView
-    )
+    UseBonusesView,
+
+)
 
 urlpatterns = [
     path('login/', UserLoginView.as_view(), name='user_registration'),
@@ -22,7 +22,5 @@ urlpatterns = [
     path('addresses/<int:pk>/delete/', UserAddressDeleteAPIView.as_view(), name='delete_address'),
     path('user-delete/', UserDeleteAPIView.as_view(), name='user-delete'),
     path('notification-settings/', NotificationSettingsAPIView.as_view(), name='notification-settings'),
-    path('bonus/', UserBonusView.as_view(), name='user-bonus'),
-    path('api/validate-qr/', QRCodeValidationView.as_view(), name='validate-qr'),
-
+    path('use-bonuses/', UseBonusesView.as_view(), name='use_bonuses'),
 ]
