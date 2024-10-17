@@ -64,6 +64,10 @@ class Order(models.Model):
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
 
+    class Meta:
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey('orders.Order', on_delete=models.CASCADE, related_name='order_items')

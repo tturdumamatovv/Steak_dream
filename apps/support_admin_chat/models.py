@@ -10,7 +10,11 @@ class ChatRoom(models.Model):
     active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"ChatRoom for {self.user.phone_number} (Active: {self.active})"
+        return f"Чат-комната для {self.user.phone_number} (Активна: {self.active})"
+    
+    class Meta:
+        verbose_name = 'Чат-комната'
+        verbose_name_plural = 'Чат-комнаты'
 
 
 class ChatMessage(models.Model):
@@ -21,4 +25,8 @@ class ChatMessage(models.Model):
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Message from {self.sender.phone_number} in Room {self.room.id}"
+        return f"Сообщение от {self.sender.phone_number} в комнате {self.room.id}"
+    
+    class Meta:
+        verbose_name = 'Сообщение'
+        verbose_name_plural = 'Сообщения'

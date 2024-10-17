@@ -33,6 +33,10 @@ class Category(models.Model, ImageProcessingMixin):
             self.slug = slugify(unidecode(self.title))
 
         super().save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
 
 class Product(models.Model, ImageProcessingMixin):
@@ -58,6 +62,10 @@ class Product(models.Model, ImageProcessingMixin):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        verbose_name = 'Товар'
+        verbose_name_plural = 'Товары'
 
 
 class Tag(models.Model):
