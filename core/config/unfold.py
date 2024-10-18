@@ -206,7 +206,7 @@ UNFOLD = {
                     },
                     {
                         "title": _("Задачи в очереди"),
-                        "icon": "smart_toy",
+                        "icon": "sync",
                         "link": reverse_lazy("admin:background_task_task_changelist"),
                     },
                 ],
