@@ -124,3 +124,11 @@ class BonusTransaction(models.Model):
     bonus_spent = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     bonus_earned = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.transaction_id}'
+
+    class Meta:
+        verbose_name = _("Бонусная транзакция")
+        verbose_name_plural = _("Бонусные транзакции")
+        ordering = ['-created_at']
