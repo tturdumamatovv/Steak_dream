@@ -126,10 +126,10 @@ class Banner(models.Model):
     type = models.CharField(verbose_name="Тип баннера", max_length=10, choices=TYPE_CHOICES, default='product')
     product = models.ForeignKey(Product, verbose_name="Продукт", on_delete=models.CASCADE, blank=True, null=True)
     category = models.ForeignKey(Category, verbose_name="Категория", on_delete=models.CASCADE, blank=True, null=True)
-    link = models.URLField(verbose_name="ссылка", max_length=200, blank=True, null=True)
+    link = models.URLField(verbose_name="Ссылка", max_length=200, blank=True, null=True)
     title = models.CharField(verbose_name="Заголовок", max_length=123, blank=True, null=True)
-    image_desktop = models.ImageField(verbose_name="Картинка круп", upload_to="images/banners/desktop/%Y/%m/")
-    image_mobile = models.ImageField(verbose_name="Картинка моб", upload_to="images/banners/mobile/%Y/%m/")
+    image_desktop = models.ImageField(verbose_name="Картинка крупная", upload_to="images/banners/desktop/%Y/%m/")
+    image_mobile = models.ImageField(verbose_name="Картинка мобильная", upload_to="images/banners/mobile/%Y/%m/")
     is_active = models.BooleanField(verbose_name="Активный", default=True)
     created_at = models.DateTimeField(verbose_name="Дата создания", auto_now_add=True, blank=True, null=True)
 
@@ -187,7 +187,7 @@ class Contacts(SingletonModel):
 
 class Phone(models.Model):
     contacts = models.ForeignKey(Contacts, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=100)
+    phone = models.CharField(verbose_name=_('Телефон'), max_length=100)
 
     def __str__(self):
         return f'{self.phone}'
@@ -199,7 +199,7 @@ class Phone(models.Model):
 
 class Email(models.Model):
     contacts = models.ForeignKey(Contacts, on_delete=models.CASCADE)
-    email = models.CharField(max_length=255)
+    email = models.CharField(verbose_name=_('Имейл'), max_length=255)
 
     def __str__(self):
         return f'{self.email}'
@@ -211,8 +211,8 @@ class Email(models.Model):
 
 class SocialLink(models.Model):
     contacts = models.ForeignKey(Contacts, on_delete=models.CASCADE)
-    link = models.CharField(max_length=100)
-    icon = models.FileField(upload_to='social_icons')
+    link = models.CharField(verbose_name=_('Ссылка'), max_length=100)
+    icon = models.FileField(verbose_name=_('Иконка'), upload_to='social_icons')
 
     def __str__(self):
         return f'{self.link}'
@@ -224,7 +224,7 @@ class SocialLink(models.Model):
 
 class Address(models.Model):
     contacts = models.ForeignKey(Contacts, on_delete=models.CASCADE)
-    address = models.CharField(max_length=255)
+    address = models.CharField(verbose_name=_('Адрес'), max_length=255)
 
     def __str__(self):
         return self.address
@@ -236,8 +236,8 @@ class Address(models.Model):
 
 class PaymentMethod(models.Model):
     contacts = models.ForeignKey(Contacts, on_delete=models.CASCADE)
-    link = models.CharField(max_length=100)
-    icon = models.FileField(upload_to='payment_icons')
+    link = models.CharField(verbose_name=_('Ссылка'), max_length=100)
+    icon = models.FileField(verbose_name=_('Иконка'), upload_to='payment_icons')
 
     def __str__(self):
         return f'{self.link}'
@@ -251,7 +251,7 @@ class Stories(models.Model):
     title = models.CharField(verbose_name="Заголовок", max_length=123, blank=True, null=True)
     image = models.ImageField(verbose_name="Изображение", upload_to="images/stories", blank=True, null=True)
     is_active = models.BooleanField(verbose_name="Активный", default=True)
-
+    created_at = models.DateTimeField(verbose_name="Дата создания", auto_now_add=True, blank=True, null=True)
     def __str__(self):
         return self.title
 
@@ -348,9 +348,9 @@ class BonusPage(SingletonModel):
 class Advertisement(models.Model):
     title = models.CharField(max_length=200, verbose_name="Заголовок")
     content = models.TextField(verbose_name="Содержание")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
-    is_active = models.BooleanField(default=True, verbose_name="Активно")
+    is_active = models.BooleanField(default=True, verbose_name="Активный")
     image = models.ImageField(upload_to='advertisements/', blank=True, null=True, verbose_name="Изображение")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def __str__(self):
         return self.title
