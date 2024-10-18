@@ -46,23 +46,23 @@ class Restaurant(models.Model):
 
 
 class Order(models.Model):
-    type = models.CharField(max_length=255, choices=[('delivery', 'Доставка'), ('pickup', 'Самовывоз')])
-    infosystem = models.CharField(max_length=255, blank=True, null=True)
-    status = models.CharField(max_length=255,
+    type = models.CharField(verbose_name=_('Способ получения'), max_length=255, choices=[('delivery', 'Доставка'), ('pickup', 'Самовывоз')])
+    infosystem = models.CharField(verbose_name=_('Инфосистема'), max_length=255, blank=True, null=True)
+    status = models.CharField(verbose_name=_('Статус'), max_length=255,
                               choices=[('created', 'Создан'), ('paid', 'Оплачен'), ('delivered', 'Доставлен')])
-    pay_method = models.CharField(max_length=255, choices=[
+    pay_method = models.CharField(verbose_name=_('Способ оплаты'), max_length=255, choices=[
         ('cash', 'Наличные'),
         ('visa', 'Виза'),
         ('elcart', 'Эльекарт'),
         ('elsom', 'Элсом'),
         ('o_money', 'О деньги')
     ])
-    change = models.FloatField()
-    total = models.FloatField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    addresses = models.ForeignKey('authentication.UserAddress', on_delete=models.CASCADE)
-    comment = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+    change = models.FloatField(verbose_name=_('Сдача'))
+    total = models.FloatField(verbose_name=_('Итого'))
+    user = models.ForeignKey(User, verbose_name=_('Пользователь'), on_delete=models.CASCADE)
+    addresses = models.ForeignKey('authentication.UserAddress', verbose_name=_('Адрес доставки'), on_delete=models.CASCADE)
+    comment = models.TextField(verbose_name=_('Комментарий'))
+    created_at = models.DateTimeField(verbose_name=_('Дата создания'), auto_now_add=True, blank=True)
 
     class Meta:
         verbose_name = 'Заказ'
@@ -70,10 +70,17 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey('orders.Order', on_delete=models.CASCADE, related_name='order_items')
-    product = models.ForeignKey('catalog.Product', on_delete=models.CASCADE)
-    quantity = models.FloatField()
-    amount = models.FloatField()
+    order = models.ForeignKey('orders.Order', verbose_name=_('Заказы'), on_delete=models.CASCADE, related_name='order_items')
+    product = models.ForeignKey('catalog.Product', verbose_name=_('Товар'), on_delete=models.CASCADE)
+    quantity = models.FloatField(verbose_name=_('Количество'))
+    amount = models.FloatField(verbose_name=_('Сумма'))
+
+    def __str__(self):
+        return f"Товар {self.product.title} в заказе {self.order.id}"
+
+    class Meta:
+        verbose_name = 'Товар в заказ'
+        verbose_name_plural = 'Товары в заказе'
 
 
 
