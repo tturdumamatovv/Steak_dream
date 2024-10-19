@@ -14,25 +14,27 @@ class ProductListByCategorySlugView(ListAPIView):
     def get(self, request, *args, **kwargs):
         slug = self.kwargs['slug']
         try:
-            category = Category.objects.get(slug=slug)
+            category = Category.objects.get(slug=slug, activity=True)
         except Category.DoesNotExist:
-            raise NotFound("Категория не найдена")
-        products = Product.objects.filter(category=category).distinct()
+            raise NotFound("Активная категория не найдена")
+        products = Product.objects.filter(category=category, activity=True).distinct()
         product_serializer = ProductSerializer(products, many=True, context={'request': request})
-        return Response({'products': product_serializer.data, })
+        return Response({'products': product_serializer.data})
 
 
 class CategoryListView(ListAPIView):
     serializer_class = CategoryProductSerializer
 
     def get(self, request, *args, **kwargs):
-        categories = Category.objects.prefetch_related('products').all()
+        categories = Category.objects.filter(activity=True).prefetch_related(
+            'products'
+        ).all()
         serializer = CategoryProductSerializer(categories, many=True, context={'request': request})
         return Response(serializer.data)
 
 
 class ProductSearchView(ListAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.filter(activity=True)
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductFilter
@@ -42,7 +44,7 @@ class CategoryOnlyListView(ListAPIView):
     serializer_class = CategoryOnlySerializer
 
     def get(self, request, *args, **kwargs):
-        categories = Category.objects.all()
+        categories = Category.objects.filter(activity=True)
         serializer = CategoryOnlySerializer(categories, many=True, context={'request': request})
         return Response(serializer.data)
 

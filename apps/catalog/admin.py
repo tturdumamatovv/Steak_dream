@@ -24,6 +24,7 @@ class ProductAdmin(ModelAdmin):
     list_display = ['title', 'category', 'price', 'quantity', 'created_at']
     search_fields = ['title', 'supplier_id',]
     list_filter = ['category', 'created_at']
+    list_per_page = 15
 
     def update_selected_products(self, request, queryset):
         for product in queryset:
@@ -33,4 +34,4 @@ class ProductAdmin(ModelAdmin):
 
     # Link the action to the admin
     actions = [update_selected_products]
-    update_selected_products.short_description = "Update selected products from API"
+    update_selected_products.short_description = "Обновить данные для выбранных товаров"

@@ -1,7 +1,6 @@
 from colorfield.fields import ColorField
 from django.db import models
-from django.utils.text import slugify
-from unidecode import unidecode
+from slugify import slugify
 
 from apps.common.mixins import ImageProcessingMixin
 from django.utils.translation import gettext_lazy as _
@@ -30,7 +29,7 @@ class Category(models.Model, ImageProcessingMixin):
         self.process_and_save_image('image')
 
         if not self.slug:
-            self.slug = slugify(unidecode(self.title))
+            self.slug = slugify(self.title)
 
         super().save(*args, **kwargs)
     
