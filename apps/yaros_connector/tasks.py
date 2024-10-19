@@ -9,21 +9,21 @@ logger = logging.getLogger(__name__)
 
 @background(schedule=600)  # Задача будет запускаться каждые 10 минут
 def fetch_products():
-    logger.info("Fetching products...")
+    logger.info("Загрузка данных...")
     suppliers = Supplier.objects.all()
     for supplier in suppliers:
         inserter = APIInserter(supplier=supplier)
         inserter.create()  # Получение и создание продуктов
-        logger.info(f"Products fetched for supplier: {supplier.name}")
+        logger.info(f"Данные для {supplier.name} успешно загружены")
 
 @background(schedule=300)  # Задача будет запускаться каждые 5 минут
 def update_products():
     # Проверяем, существует ли уже задача
     if Task.objects.filter(task_name='update_products').exists():
-        logger.info("Update products task already exists, skipping.")
+        logger.info("Задача обновления продуктов уже существует, пропускаем.")
         return  # Если задача уже существует, выходим
 
-    logger.info("Updating products...")
+    logger.info("Обновление продуктов...")
     suppliers = Supplier.objects.all()
     for supplier in suppliers:
         inserter = APIInserter(supplier=supplier)
@@ -31,5 +31,5 @@ def update_products():
 
 @background(schedule=3)  # Задача будет запускаться каждые 3 секунды
 def test_task():
-    logger.info("Test task is running...")
+    logger.info("Задача теста запущена...")
     # Здесь можно добавить любую другую логику, которую вы хотите выполнить
