@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from unfold.admin import TabularInline, ModelAdmin, StackedInline
 
-from .models import User, UserAddress, BonusTransaction
+from .models import User, UserAddress, BonusTransaction, Child
 
 
 @admin.register(UserAddress)
@@ -17,9 +17,15 @@ class UserAddressInline(StackedInline):
     classes = ['collapse']
 
 
+class ChildInline(StackedInline):
+    model = Child
+    extra = 0
+    classes = ['collapse']
+
+
 @admin.register(User)
 class UserAdmin(ModelAdmin):
-    inlines = [UserAddressInline]
+    inlines = [UserAddressInline, ChildInline]
 
 
 @admin.register(BonusTransaction)

@@ -21,7 +21,7 @@ from .serializers import (
     UserAddressSerializer,
     UserAddressUpdateSerializer,
     NotificationSerializer,
-    UserBonusSerializer, QRCodeRequestSerializer
+    UserBonusSerializer, QRCodeRequestSerializer, PhoneBonusRequestSerializer
 )
 
 
@@ -253,5 +253,48 @@ class UseBonusesView(APIView):
 
             except User.DoesNotExist:
                 return Response({"error": "Invalid QR code"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UseBonusesByPhoneView(APIView):
+
+    @extend_schema(
+        request=PhoneBonusRequestSerializer,
+        responses={200: 'Bonuses used successfully'}
+    )
+    def post(self, request):
+        serializer = PhoneBonusRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            phone_number = serializer.validated_data['phone_number']
+            spent_bonuses = serializer.validated_data['spent_bonuses']
+            earned_bonuses = serializer.validated_data['earned_bonuses']
+
+            try:
+                user = User.objects.get(phone_number=phone_number)
+
+                if user.bonus < spent_bonuses:
+                    return Response({"error": "Insufficient bonuses"}, status=status.HTTP_400_BAD_REQUEST)
+
+                user.bonus -= spent_bonuses
+                user.bonus += earned_bonuses
+                user.regenerate_secret_key()  # Если нужно сгенерировать новый секретный ключ
+
+                BonusTransaction.objects.create(
+                    user=user,
+                    bonus_spent=spent_bonuses,
+                    bonus_earned=earned_bonuses
+                )
+
+                user.save()
+
+                return Response({
+                    'message': 'Bonuses used successfully',
+                    'new_bonus': user.bonus,
+                    'new_qr_code': user.qr_code.url,  # Если QR код всё ещё нужен
+                }, status=status.HTTP_200_OK)
+
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

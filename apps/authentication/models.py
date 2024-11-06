@@ -14,9 +14,12 @@ from django.contrib.auth.models import (
     PermissionsMixin
 )
 from django.conf import settings
+from django.db import transaction  # Импортируем transaction
+from django.utils import timezone  # Импортируем timezone
 
 
 class CustomUserManager(BaseUserManager):
+    @transaction.atomic  # Оборачиваем в транзакцию
     def create_user(self, phone_number, password=None):
         if not phone_number:
             raise ValueError('Необходимо указать номер телефона')
@@ -24,6 +27,14 @@ class CustomUserManager(BaseUserManager):
         user = self.model(phone_number=phone_number)
         user.set_password(password)
         user.save(using=self._db)
+
+        # Проверка и создание экземпляра BonusSystemSettings, если он не существует
+        bonus_settings, created = BonusSystemSettings.objects.get_or_create(pk=1)
+
+        # Начисление бонусов при регистрации
+        user.bonus += bonus_settings.registration_bonus  # Добавляем бонусы к пользователю
+        user.save(using=self._db)  # Сохраняем изменения
+
         return user
 
     def create_superuser(self, phone_number, password=None):
@@ -66,17 +77,18 @@ class User(AbstractBaseUser, PermissionsMixin):
             try:
                 old_instance = User.objects.get(pk=self.pk)
                 if old_instance.qr_code and os.path.isfile(old_instance.qr_code.path):
-                    os.remove(old_instance.qr_code.path)  # Удаляем старый файл
+                    os.remove(old_instance.qr_code.path)
             except User.DoesNotExist:
-                pass  # Если пользователь новый, пропускаем
+                pass
 
-        # Генерация нового QR-кода
+
         qr_data = f"{self.phone_number}%{self.secret_key}"
         qr_img = qrcode.make(qr_data)
         buffer = BytesIO()
         qr_img.save(buffer, format="PNG")
         file_name = f"qr_code_{self.phone_number}.png"
         self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
+
 
     def regenerate_secret_key(self):
         self.secret_key = uuid.uuid4()
@@ -92,6 +104,34 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = _('Пользователь')
         verbose_name_plural = _("Пользователи")
+
+    def check_birthday_bonus(self):
+        if self.date_of_birth and self.date_of_birth.month == timezone.now().month and self.date_of_birth.day == timezone.now().day:
+            bonus_settings = BonusSystemSettings.load()  # Загружаем настройки бонусов
+            self.bonus += bonus_settings.birthday_bonus  # Начисляем бонус за день рождения
+            self.save(update_fields=['bonus'])  # Сохраняем только поле бонуса
+
+    def add_bonus(self, amount):
+        """Метод для начисления бонусов пользователю."""
+        if amount > 0:
+            self.bonus += amount
+            self.save(update_fields=['bonus'])  # Сохраняем только поле бонуса
+
+    def check_birthdays(self):
+        """Проверяет дни рождения пользователя и его детей и начисляет бонусы."""
+        # Проверка дня рождения пользователя
+        if self.date_of_birth and self.date_of_birth.month == timezone.now().month and self.date_of_birth.day == timezone.now().day:
+            bonus_settings = BonusSystemSettings.load()  # Загружаем настройки бонусов
+            self.bonus += bonus_settings.birthday_bonus  # Начисляем бонус за день рождения
+            self.save(update_fields=['bonus'])  # Сохраняем только поле бонуса
+
+        # Проверка дней рождения детей
+        for child in self.children.all():
+            if child.date_of_birth and child.date_of_birth.month == timezone.now().month and child.date_of_birth.day == timezone.now().day:
+                self.bonus += BonusSystemSettings.load().child_birthday_bonus  # Начисляем бонус за день рождения ребенка
+                self.save(update_fields=['bonus'])  # Сохраняем только поле бонуса
+
+
 
 
 class UserAddress(models.Model):
@@ -132,3 +172,46 @@ class BonusTransaction(models.Model):
         verbose_name = _("Бонусная транзакция")
         verbose_name_plural = _("Бонусные транзакции")
         ordering = ['-created_at']
+
+
+class BonusSystemSettings(models.Model):
+    registration_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_('Бонус за регистрацию'))
+    birthday_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_('Бонус за день рождения'))
+    child_birthday_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_('Бонус за день рождения детей'))
+    order_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_('Бонус за заказ'))
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.registration_bonus}'
+
+    class Meta:
+        verbose_name = _("Настройки системы бонусов")
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class Child(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='children', verbose_name=_("Пользователь"))
+    name = models.CharField(max_length=255, verbose_name=_("Имя"))
+    date_of_birth = models.DateField(verbose_name=_("Дата рождения"))
+
+    class Meta:
+        verbose_name = _("Ребенок")
+        verbose_name_plural = _("Дети")
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Сначала сохраняем объект
+        self.check_birthday_bonus()  # Проверяем и начисляем бонусы на день рождения
+
+    def check_birthday_bonus(self):
+        if self.date_of_birth and self.date_of_birth.month == timezone.now().month and self.date_of_birth.day == timezone.now().day:
+            bonus_settings = BonusSystemSettings.load()  # Загружаем настройки бонусов
+            self.user.bonus += bonus_settings.child_birthday_bonus  # Начисляем бонус за день рождения ребенка
+            self.user.save(update_fields=['bonus'])  # Сохраняем только поле бонуса пользователя
+            

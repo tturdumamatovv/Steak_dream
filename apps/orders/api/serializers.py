@@ -17,9 +17,9 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['type', 'infosystem', 'status', 'pay_method', 'change', 'total', 'addresses', 'comment', 'order_items', 'user']
 
     def create(self, validated_data):
-        order_items_data = validated_data.pop('order_items')  # Извлекаем данные о предметах заказа
+        order_items_data = validated_data.pop('order_items')
         with transaction.atomic():
-            order = Order.objects.create(**validated_data)  # Создаем заказ
+            order = Order.objects.create(**validated_data)
             for item_data in order_items_data:
-                OrderItem.objects.create(order=order, **item_data)  # Создаем предметы заказа
+                OrderItem.objects.create(order=order, **item_data)
         return order

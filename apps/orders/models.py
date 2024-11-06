@@ -58,6 +58,7 @@ class Order(models.Model):
         ('o_money', 'О деньги')
     ])
     change = models.FloatField(verbose_name=_('Сдача'))
+    bonus_used = models.FloatField(verbose_name=_('Использованные бонусы'))
     total = models.FloatField(verbose_name=_('Итого'))
     user = models.ForeignKey(User, verbose_name=_('Пользователь'), on_delete=models.CASCADE)
     addresses = models.ForeignKey('authentication.UserAddress', verbose_name=_('Адрес доставки'), on_delete=models.CASCADE)

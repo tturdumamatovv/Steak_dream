@@ -34,7 +34,6 @@ class OrderCreateView(APIView):
         description="Создание нового заказа с предметами."
     )
     def post(self, request):
-        # Устанавливаем пользователя в данные запроса
         request.data['user'] = request.user.id  # Устанавливаем пользователя
         order_serializer = OrderSerializer(data=request.data)
         if order_serializer.is_valid():

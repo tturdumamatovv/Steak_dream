@@ -112,3 +112,9 @@ class QRCodeRequestSerializer(serializers.Serializer):
     qr_data = serializers.CharField()
     spent_bonuses = serializers.DecimalField(max_digits=10, decimal_places=2)
     earned_bonuses = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+
+class PhoneBonusRequestSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=20, help_text="Enter the user's phone number.")
+    spent_bonuses = serializers.IntegerField(help_text="The amount of bonuses to be spent.", min_value=0)
+    earned_bonuses = serializers.IntegerField(help_text="The amount of bonuses to be earned.", min_value=0)
