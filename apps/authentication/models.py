@@ -14,12 +14,12 @@ from django.contrib.auth.models import (
     PermissionsMixin
 )
 from django.conf import settings
-from django.db import transaction  # Импортируем transaction
-from django.utils import timezone  # Импортируем timezone
+from django.db import transaction
+from django.utils import timezone
 
 
 class CustomUserManager(BaseUserManager):
-    @transaction.atomic  # Оборачиваем в транзакцию
+    @transaction.atomic
     def create_user(self, phone_number, password=None):
         if not phone_number:
             raise ValueError('Необходимо указать номер телефона')
@@ -28,12 +28,10 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
 
-        # Проверка и создание экземпляра BonusSystemSettings, если он не существует
         bonus_settings, created = BonusSystemSettings.objects.get_or_create(pk=1)
 
-        # Начисление бонусов при регистрации
-        user.bonus += bonus_settings.registration_bonus  # Добавляем бонусы к пользователю
-        user.save(using=self._db)  # Сохраняем изменения
+        user.bonus += bonus_settings.registration_bonus
+        user.save(using=self._db)
 
         return user
 
@@ -107,29 +105,28 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def check_birthday_bonus(self):
         if self.date_of_birth and self.date_of_birth.month == timezone.now().month and self.date_of_birth.day == timezone.now().day:
-            bonus_settings = BonusSystemSettings.load()  # Загружаем настройки бонусов
-            self.bonus += bonus_settings.birthday_bonus  # Начисляем бонус за день рождения
-            self.save(update_fields=['bonus'])  # Сохраняем только поле бонуса
+            bonus_settings = BonusSystemSettings.load()
+            self.bonus += bonus_settings.birthday_bonus
+            self.save(update_fields=['bonus']) 
 
     def add_bonus(self, amount):
         """Метод для начисления бонусов пользователю."""
         if amount > 0:
             self.bonus += amount
-            self.save(update_fields=['bonus'])  # Сохраняем только поле бонуса
+            self.save(update_fields=['bonus'])
 
     def check_birthdays(self):
         """Проверяет дни рождения пользователя и его детей и начисляет бонусы."""
-        # Проверка дня рождения пользователя
         if self.date_of_birth and self.date_of_birth.month == timezone.now().month and self.date_of_birth.day == timezone.now().day:
-            bonus_settings = BonusSystemSettings.load()  # Загружаем настройки бонусов
-            self.bonus += bonus_settings.birthday_bonus  # Начисляем бонус за день рождения
-            self.save(update_fields=['bonus'])  # Сохраняем только поле бонуса
+            bonus_settings = BonusSystemSettings.load()
+            self.bonus += bonus_settings.birthday_bonus
+            self.save(update_fields=['bonus'])
 
         # Проверка дней рождения детей
         for child in self.children.all():
             if child.date_of_birth and child.date_of_birth.month == timezone.now().month and child.date_of_birth.day == timezone.now().day:
-                self.bonus += BonusSystemSettings.load().child_birthday_bonus  # Начисляем бонус за день рождения ребенка
-                self.save(update_fields=['bonus'])  # Сохраняем только поле бонуса
+                self.bonus += BonusSystemSettings.load().child_birthday_bonus
+                self.save(update_fields=['bonus'])
 
 
 
@@ -206,12 +203,11 @@ class Child(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Сначала сохраняем объект
-        self.check_birthday_bonus()  # Проверяем и начисляем бонусы на день рождения
+        super().save(*args, **kwargs)
+        self.check_birthday_bonus()
 
     def check_birthday_bonus(self):
         if self.date_of_birth and self.date_of_birth.month == timezone.now().month and self.date_of_birth.day == timezone.now().day:
-            bonus_settings = BonusSystemSettings.load()  # Загружаем настройки бонусов
-            self.user.bonus += bonus_settings.child_birthday_bonus  # Начисляем бонус за день рождения ребенка
-            self.user.save(update_fields=['bonus'])  # Сохраняем только поле бонуса пользователя
-            
+            bonus_settings = BonusSystemSettings.load()
+            self.user.bonus += bonus_settings.child_birthday_bonus
+            self.user.save(update_fields=['bonus'])
