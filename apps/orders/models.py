@@ -57,9 +57,9 @@ class Order(models.Model):
         ('elsom', 'Элсом'),
         ('o_money', 'О деньги')
     ])
-    change = models.FloatField(verbose_name=_('Сдача'))
-    bonus_used = models.FloatField(verbose_name=_('Использованные бонусы'))
-    total = models.FloatField(verbose_name=_('Итого'))
+    change = models.FloatField(verbose_name=_('Сдача'), default=0)
+    bonus_used = models.FloatField(verbose_name=_('Использованные бонусы'), default=0)
+    total = models.FloatField(verbose_name=_('Итого'), default=0)
     user = models.ForeignKey(User, verbose_name=_('Пользователь'), on_delete=models.CASCADE)
     addresses = models.ForeignKey('authentication.UserAddress', verbose_name=_('Адрес доставки'), on_delete=models.CASCADE)
     comment = models.TextField(verbose_name=_('Комментарий'))
