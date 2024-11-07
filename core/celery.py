@@ -1,19 +1,27 @@
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
+from celery.schedules import crontab
 
-# Задайте настройки Django для использования в Celery
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
-# Создайте приложение Celery
 app = Celery('core')
 app.conf.update(
     worker_pool='solo'
 )
 
-# Загрузите настройки из конфигурации Django
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
-# Автоматически обнаруживайте задачи в установленных приложениях
 app.autodiscover_tasks()
 
+# Настройка периодического выполнения задач
+app.conf.beat_schedule = {
+    'check-birthdays-every-day': {
+        'task': 'apps.authentication.tasks.check_birthdays_task',
+        'schedule': crontab(hour=0, minute=0),  # Каждый день в полночь
+    },
+    'fetch-products-every-15-minutes': {
+        'task': 'apps.authentication.tasks.fetch_products_from_api',
+        'schedule': crontab(minute='*/15'),  # Каждые 15 минут
+    },
+}

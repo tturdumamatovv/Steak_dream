@@ -128,6 +128,12 @@ class User(AbstractBaseUser, PermissionsMixin):
                 self.bonus += BonusSystemSettings.load().child_birthday_bonus
                 self.save(update_fields=['bonus'])
 
+    @classmethod
+    def check_birthdays_for_all_users(cls):
+        users = cls.objects.all()
+        for user in users:
+            user.check_birthdays()
+
 
 
 

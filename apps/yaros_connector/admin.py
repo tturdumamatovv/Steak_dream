@@ -4,6 +4,7 @@ from django.contrib import messages
 
 from .data_inserter import APIInserter
 from .models import Supplier
+from apps.authentication.tasks import fetch_products_from_api
 
 
 # Register your models here.
@@ -27,17 +28,8 @@ class SupplierAdmin(ModelAdmin):
 
     def update_products_from_api(self, request, queryset):
         for supplier in queryset:
-            inserter = APIInserter(supplier=supplier)
-            error = inserter.update_all_products()
-            if error:
-                self.message_user(
-                    request, 
-                    f"Ошибка при обновлении продуктов для {supplier.name}: {error}\n"
-                    f"Пожалуйста, проверьте поля 'Ссылка' и 'Публикация' на наличие недостающих слешей ('/').\n",
-                    level=messages.ERROR
-                )
-            else:
-                self.message_user(request, f"Данные для {supplier.name} успешно обновлены", level=messages.SUCCESS)
+            fetch_products_from_api.delay(supplier.id)
+            self.message_user(request, f"Запрос на обновление продуктов для {supplier.name} отправлен.", level=messages.SUCCESS)
 
     actions = [run_api_insert, update_products_from_api]
     run_api_insert.short_description = 'Загрузить данные для выбранных поставщиков'
