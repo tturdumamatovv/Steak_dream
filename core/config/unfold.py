@@ -199,16 +199,16 @@ UNFOLD = {
                         "icon": "groups",
                         "link": reverse_lazy("admin:yaros_connector_supplier_changelist"),
                     },
-                    {
-                        "title": _("Выполненные задачи"),
-                        "icon": "checklist",
-                        "link": reverse_lazy("admin:background_task_completedtask_changelist"),
-                    },
-                    {
-                        "title": _("Задачи в очереди"),
-                        "icon": "sync",
-                        "link": reverse_lazy("admin:background_task_task_changelist"),
-                    },
+                    # {
+                    #     "title": _("Выполненные задачи"),
+                    #     "icon": "checklist",
+                    #     "link": reverse_lazy("admin:background_task_completedtask_changelist"),
+                    # },
+                    # {
+                    #     "title": _("Задачи в очереди"),
+                    #     "icon": "sync",
+                    #     "link": reverse_lazy("admin:background_task_task_changelist"),
+                    # },
                 ],
             },
         ],

@@ -1,6 +1,5 @@
 # Register your models here.
 from django.contrib import admin
-from background_task.models import Task, CompletedTask
 from unfold.admin import ModelAdmin
 
 
@@ -38,19 +37,3 @@ class CompletedTaskAdmin(ModelAdmin):
     list_display = ['task_name', 'task_params', 'run_at', 'priority', 'attempts', 'has_error', 'locked_by',
                     'locked_by_pid_running']
 
-
-# Функция для безопасной отмены регистрации модели
-def unregister_model(admin_site, model):
-    try:
-        admin_site.unregister(model)
-    except admin.sites.NotRegistered:
-        pass
-
-
-# Отменяем регистрацию моделей
-unregister_model(admin.site, Task)
-unregister_model(admin.site, CompletedTask)
-
-# Регистрируем модели с вашими классами администратора
-admin.site.register(Task, TaskAdmin)
-admin.site.register(CompletedTask, CompletedTaskAdmin)
