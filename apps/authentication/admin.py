@@ -1,9 +1,9 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, StackedInline
 
-from django.utils.translation import gettext_lazy as _
-from unfold.admin import TabularInline, ModelAdmin, StackedInline
+from .models import User, UserAddress, Child, BonusSystemSettings, BonusTransaction
+from .tasks import check_birthdays_for_selected_users
 
-from .models import User, UserAddress, BonusTransaction, Child
 
 @admin.register(UserAddress)
 class UserAddressAdmin(ModelAdmin):
@@ -18,18 +18,33 @@ class UserAddressInline(StackedInline):
 
 class ChildInline(StackedInline):
     model = Child
-    extra = 0
-    classes = ['collapse']
+    extra = 1
+
+
 
 
 @admin.register(User)
 class UserAdmin(ModelAdmin):
+    list_display = ['phone_number', 'date_of_birth']  # Добавьте нужные поля
+    search_fields = ['phone_number', 'date_of_birth']
     inlines = [UserAddressInline, ChildInline]
-    actions = ['run_test_task']
+
+    def check_birthdays(self, request, queryset):
+        user_ids = list(queryset.values_list('id', flat=True))  # Получаем список ID выбранных пользователей
+        check_birthdays_for_selected_users.delay(user_ids)  # Вызываем новую задачу для проверки дней рождения
+        self.message_user(request, f"Запрос на проверку дней рождения для выбранных пользователей отправлен.")
+
+    actions = [check_birthdays]
+    check_birthdays.short_description = "Проверить дни рождения для выбранных пользователей и их детей"
+
+
+@admin.register(BonusSystemSettings)
+class BonusSystemSettingsAdmin(ModelAdmin):
+    pass
 
 
 @admin.register(BonusTransaction)
 class BonusTransactionAdmin(ModelAdmin):
-    list_display = ('user', 'bonus_spent', 'bonus_earned', 'created_at')
-    list_filter = ('created_at',)
-    search_fields = ('user__phone_number',)
+    list_display = ['user', 'bonus_spent', 'bonus_earned', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__phone_number']

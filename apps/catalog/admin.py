@@ -2,7 +2,7 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin
 
 from .models import Category, Product
-from ..yaros_connector.product_updater import ProductUpdater
+from .tasks import update_product_task
 
 
 # Register your models here.
@@ -28,9 +28,8 @@ class ProductAdmin(ModelAdmin):
 
     def update_selected_products(self, request, queryset):
         for product in queryset:
-            inserter = ProductUpdater(supplier=product.supplier_integration)  # Используем объект Supplier
-            inserter.update_product_data([product.supplier_id])  # Обновляем только выбранный продукт
-            self.message_user(request, f"Товары от поставщика {product.supplier_integration.name} обновлены")
+            update_product_task.delay(product.supplier_integration.id, product.supplier_id)  # Асинхронный вызов
+            self.message_user(request, f"Запрос на обновление товара {product.title} отправлен.")
 
     # Link the action to the admin
     actions = [update_selected_products]
