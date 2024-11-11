@@ -29,13 +29,12 @@ class CategoryListView(ListAPIView):
         categories = Category.objects.all().prefetch_related(
             'products'
         ).all()
-        print(categories)
         serializer = CategoryProductSerializer(categories, many=True, context={'request': request})
         return Response(serializer.data)
 
 
 class ProductSearchView(ListAPIView):
-    queryset = Product.objects.filter(activity=True)
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductFilter
