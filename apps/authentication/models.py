@@ -26,14 +26,11 @@ class CustomUserManager(BaseUserManager):
 
         user = self.model(phone_number=phone_number)
         user.set_password(password)
+        user.save(using=self._db)
 
-        # Получаем настройки бонусов
         bonus_settings, created = BonusSystemSettings.objects.get_or_create(pk=1)
 
-        # Устанавливаем значение по умолчанию для бонусов
-        user.bonus = bonus_settings.registration_bonus if bonus_settings else 0
-
-        user.save(using=self._db)
+        user.add_bonus(bonus_settings.registration_bonus)
 
         return user
 
@@ -55,7 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_of_birth = models.DateField(blank=True, null=True, verbose_name=_('Дата рождения'))
     email = models.EmailField(blank=True, verbose_name=_('Имейл'))
     first_visit = models.BooleanField(default=True, verbose_name=_('Дата первого визита'))
-    fcm_token = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('Токе��'))
+    fcm_token = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('Токен'))
     receive_notifications = models.BooleanField(default=False, verbose_name=_('Получать уведомления'), null=True,
                                                 blank=True)
     last_order = models.DateTimeField(null=True, blank=True, verbose_name=_("Последний заказ"))
@@ -208,3 +205,33 @@ class BonusTransaction(models.Model):
         verbose_name = _("Бонусная транзакция")
         verbose_name_plural = _("Бонусные транзакции")
         ordering = ['-created_at']
+
+
+class PromoCode(models.Model):
+    code = models.CharField(max_length=50, unique=True, verbose_name=_("Промокод"))
+    is_personal = models.BooleanField(default=False, verbose_name=_("Именной"))
+    usage_limit = models.PositiveIntegerField(default=1, verbose_name=_("Количество использований"))
+    expiration_date = models.DateTimeField(null=True, blank=True, verbose_name=_("Дата окончания действия"))
+    coins_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_("Количество койнов"))
+    image = models.ImageField(upload_to='promo_images/', blank=True, null=True, verbose_name=_("Изображение для попапа"))
+    users = models.ManyToManyField(User, blank=True, related_name='promo_codes', verbose_name=_("Пользователи"))
+
+    def is_valid(self):
+        """Проверяет, действителен ли промокод."""
+        if self.expiration_date and self.expiration_date < timezone.now():
+            return False
+        return True
+
+    def apply_to_user(self, user):
+        """Применяет промокод к пользователю."""
+        if self.is_valid() and self.usage_limit > 0:
+            if user not in self.users.all():
+                user.add_bonus(self.coins_amount)
+                self.usage_limit -= 1
+                self.save()
+                self.users.add(user)
+                return True
+        return False
+
+    def __str__(self):
+        return self.code

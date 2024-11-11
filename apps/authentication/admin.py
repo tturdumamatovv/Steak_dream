@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, StackedInline
 
-from .models import User, UserAddress, Child, BonusSystemSettings, BonusTransaction
+from .models import User, UserAddress, Child, BonusSystemSettings, BonusTransaction, PromoCode
 from .tasks import check_birthdays_for_selected_users
 
 
@@ -48,3 +48,10 @@ class BonusTransactionAdmin(ModelAdmin):
     list_display = ['user', 'bonus_spent', 'bonus_earned', 'created_at']
     list_filter = ['created_at']
     search_fields = ['user__phone_number']
+
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(ModelAdmin):
+    list_display = ['code', 'is_personal', 'usage_limit', 'expiration_date', 'coins_amount']
+    search_fields = ['code']
+    list_filter = ['is_personal', 'expiration_date']

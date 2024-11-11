@@ -9,9 +9,12 @@ from apps.authentication.api.views import (
     UserAddressDeleteAPIView,
     UserDeleteAPIView,
     NotificationSettingsAPIView,
-    UseBonusesView,
+    UseBonusesView, apply_promo_code_view,
 
 )
+
+
+
 
 urlpatterns = [
     path('login/', UserLoginView.as_view(), name='user_registration'),
@@ -23,4 +26,5 @@ urlpatterns = [
     path('user-delete/', UserDeleteAPIView.as_view(), name='user-delete'),
     path('notification-settings/', NotificationSettingsAPIView.as_view(), name='notification-settings'),
     path('use-bonuses/', UseBonusesView.as_view(), name='use_bonuses'),
+    path('apply-promo-code/', apply_promo_code_view, name='apply_promo_code'),
 ]

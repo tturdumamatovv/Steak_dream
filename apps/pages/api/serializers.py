@@ -171,14 +171,14 @@ class StorySerializer(serializers.ModelSerializer):
         if obj.type == 'category':
             if obj.category:
                 result = {
-                    'name': obj.category.name,
+                    'name': obj.category.title,
                     'link': obj.category.slug
                 }
                 return result
         if obj.type == 'product':
             if obj.product:
                 result = {
-                    'name': obj.product.name,
+                    'name': obj.product.title,
                     'link': obj.product.id
                 }
                 return result

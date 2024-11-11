@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.models import User
+from django.shortcuts import redirect
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
@@ -8,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.authentication.models import (
     User,
-    UserAddress, BonusTransaction
+    UserAddress, BonusTransaction, PromoCode
 )
 from apps.authentication.utils import (
     send_sms,
@@ -298,3 +300,14 @@ class UseBonusesByPhoneView(APIView):
                 return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def apply_promo_code_view(request):
+    if request.method == 'POST':
+        code = request.POST.get('promo_code')
+        promo_code = PromoCode.objects.filter(code=code).first()
+        if promo_code and promo_code.apply_to_user(request.user):
+            messages.success(request, "Промокод успешно применен!")
+        else:
+            messages.error(request, "Промокод недействителен или уже использован.")
+    return redirect(request.META.get('HTTP_REFERER', '/'))
