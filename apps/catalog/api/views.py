@@ -26,9 +26,10 @@ class CategoryListView(ListAPIView):
     serializer_class = CategoryProductSerializer
 
     def get(self, request, *args, **kwargs):
-        categories = Category.objects.filter(activity=True).prefetch_related(
+        categories = Category.objects.all().prefetch_related(
             'products'
         ).all()
+        print(categories)
         serializer = CategoryProductSerializer(categories, many=True, context={'request': request})
         return Response(serializer.data)
 
