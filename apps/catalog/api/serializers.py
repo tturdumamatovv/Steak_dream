@@ -22,6 +22,7 @@ class ProductSerializer(serializers.ModelSerializer):
     category_slug = serializers.SerializerMethodField()
     category_name = serializers.SerializerMethodField()
     price = serializers.FloatField()
+    discount = serializers.FloatField()
     discount_price = serializers.FloatField()
 
     class Meta:
