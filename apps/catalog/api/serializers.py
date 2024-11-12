@@ -24,7 +24,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'description', 'image', 'tags', 'measure', 'sort_priority', 'category_slug',
+        fields = ['id', 'title', 'description', 'price', 'quantity', 'image', 'tags', 'measure', 'sort_priority', 'category_slug',
                   'category_name']
 
     def get_min_price(self, obj):

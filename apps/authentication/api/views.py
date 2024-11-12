@@ -16,6 +16,8 @@ from apps.authentication.utils import (
     send_sms,
     generate_confirmation_code
 )
+from apps.catalog.models import Product
+from apps.orders.models import Order, OrderItem  # Импортируйте модель заказа из приложения orders
 from .serializers import (
     CustomUserSerializer,
     VerifyCodeSerializer,
@@ -302,12 +304,25 @@ class UseBonusesByPhoneView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def apply_promo_code_view(request):
-    if request.method == 'POST':
-        code = request.POST.get('promo_code')
+class ApplyPromoCodeView(generics.GenericAPIView):
+    def post(self, request, *args, **kwargs):
+        code = request.data.get('promo_code')
         promo_code = PromoCode.objects.filter(code=code).first()
+
         if promo_code and promo_code.apply_to_user(request.user):
-            messages.success(request, "Промокод успешно применен!")
+            # Создаем заказ, используя модель из приложения orders
+            order = Order.objects.create(
+                user=request.user,
+                bonus_spent=promo_code.coins_amount,  # Или другое значение, если нужно
+                bonus_earned=0  # Установите значение, если есть
+            )
+
+            # Здесь вы можете добавить товары в заказ, если они известны
+            product_ids = request.data.get('product_ids', [])
+            for product_id in product_ids:
+                product = Product.objects.get(id=product_id)
+                OrderItem.objects.create(order=order, product=product)
+
+            return Response({"message": "Промокод успешно применен!", "order_id": order.id}, status=status.HTTP_200_OK)
         else:
-            messages.error(request, "Промокод недействителен или уже использован.")
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+            return Response({"error": "Промокод недействителен или уже использован."}, status=status.HTTP_400_BAD_REQUEST)

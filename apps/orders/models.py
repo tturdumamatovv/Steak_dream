@@ -10,8 +10,8 @@ from django.utils.translation import gettext_lazy as _
 from apps.authentication.models import User
 from apps.pages.models import SingletonModel
 
-# Create your models here.
 
+# Create your models here.
 
 
 class Restaurant(models.Model):
@@ -46,7 +46,8 @@ class Restaurant(models.Model):
 
 
 class Order(models.Model):
-    type = models.CharField(verbose_name=_('Способ получения'), max_length=255, choices=[('delivery', 'Доставка'), ('pickup', 'Самовывоз')])
+    type = models.CharField(verbose_name=_('Способ получения'), max_length=255,
+                            choices=[('delivery', 'Доставка'), ('pickup', 'Самовывоз')])
     infosystem = models.CharField(verbose_name=_('Инфосистема'), max_length=255, blank=True, null=True)
     status = models.CharField(verbose_name=_('Статус'), max_length=255,
                               choices=[('created', 'Создан'), ('paid', 'Оплачен'), ('delivered', 'Доставлен')])
@@ -61,7 +62,8 @@ class Order(models.Model):
     bonus_used = models.FloatField(verbose_name=_('Использованные бонусы'), default=0)
     total = models.FloatField(verbose_name=_('Итого'), default=0)
     user = models.ForeignKey(User, verbose_name=_('Пользователь'), on_delete=models.CASCADE)
-    addresses = models.ForeignKey('authentication.UserAddress', verbose_name=_('Адрес доставки'), on_delete=models.CASCADE)
+    addresses = models.ForeignKey('authentication.UserAddress', verbose_name=_('Адрес доставки'),
+                                  on_delete=models.CASCADE)
     comment = models.TextField(verbose_name=_('Комментарий'))
     created_at = models.DateTimeField(verbose_name=_('Дата создания'), auto_now_add=True, blank=True)
 
@@ -71,7 +73,8 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey('orders.Order', verbose_name=_('Заказы'), on_delete=models.CASCADE, related_name='order_items')
+    order = models.ForeignKey('orders.Order', verbose_name=_('Заказы'), on_delete=models.CASCADE,
+                              related_name='order_items')
     product = models.ForeignKey('catalog.Product', verbose_name=_('Товар'), on_delete=models.CASCADE)
     quantity = models.FloatField(verbose_name=_('Количество'))
     amount = models.FloatField(verbose_name=_('Сумма'))
@@ -82,8 +85,6 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = 'Товар в заказ'
         verbose_name_plural = 'Товары в заказе'
-
-
 
 
 class PercentCashback(SingletonModel):
