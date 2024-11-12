@@ -44,6 +44,9 @@ class Product(models.Model, ImageProcessingMixin):
     category = models.ForeignKey(Category, verbose_name=_('Категория'), on_delete=models.CASCADE, related_name='products', null=True, blank=True)
     title = models.CharField(verbose_name=_('Название'), max_length=255)
     price = models.DecimalField(verbose_name=_('Цена'), max_digits=12, decimal_places=6)
+    discount_price = models.DecimalField(verbose_name=_('Цена со скидкой'), max_digits=12, decimal_places=6, null=True, blank=True)
+    discount = models.DecimalField(verbose_name=_('Скидка'), max_digits=12, decimal_places=6, default=0)
+    discount_type = models.CharField(verbose_name=_('Тип скидки'), max_length=255, null=True, blank=True, choices=[('percent', 'Процент'), ('amount', 'Сумма')])
     quantity = models.IntegerField(verbose_name=_('Количество'), default=0)
     image_url = models.URLField(verbose_name=_('Ссылка на изображение'), max_length=255, null=True, blank=True)
     image = models.FileField(verbose_name=_('Изображение'), upload_to='media/images/products', null=True, blank=True)
@@ -55,8 +58,20 @@ class Product(models.Model, ImageProcessingMixin):
     updated_at = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField('Tag', related_name='products', verbose_name=_('Теги'), blank=True)
 
+    def apply_discount(self):
+        if self.discount_type == 'percent':
+            self.discount_price = self.price * (1 - self.discount / 100)
+        elif self.discount_type == 'amount':
+            self.discount_price = self.price - self.discount
+        else:
+            self.discount_price = self.price
+
+        self.save()
+
+
     def save(self, *args, **kwargs):
         self.process_and_save_image('image')
+        self.apply_discount()
         super().save(*args, **kwargs)
 
     def __str__(self):

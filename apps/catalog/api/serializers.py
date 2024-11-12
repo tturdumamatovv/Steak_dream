@@ -21,11 +21,14 @@ class ProductSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     category_slug = serializers.SerializerMethodField()
     category_name = serializers.SerializerMethodField()
+    price = serializers.FloatField()
+    discount_price = serializers.FloatField()
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'description', 'price', 'quantity', 'image', 'tags', 'measure', 'sort_priority', 'category_slug',
+        fields = ['id', 'title', 'description', 'price', 'discount_price', 'discount', 'discount_type',  'quantity', 'image', 'tags', 'measure', 'sort_priority', 'category_slug',
                   'category_name']
+
 
     def get_min_price(self, obj):
         return obj.get_min_price()
@@ -52,15 +55,12 @@ class ProductSerializer(serializers.ModelSerializer):
             return obj.category.title
         return None
 
-
 class CategoryProductSerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True, read_only=True)
 
-    # sets = SetSerializer(many=True, read_only=True)
-
     class Meta:
         model = Category
-        fields = ['id', 'title', 'parent', 'slug', 'image', 'products', ]  # 'sets']
+        fields = ['id', 'title', 'parent', 'slug', 'image', 'products', ]
 
 
 class CategoryOnlySerializer(serializers.ModelSerializer):
