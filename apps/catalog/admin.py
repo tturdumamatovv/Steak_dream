@@ -21,10 +21,11 @@ class CategoryAdmin(ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(ModelAdmin):
-    list_display = ['title', 'category', 'price', 'quantity', 'created_at']
+    list_display = ['title', 'category', 'price', 'quantity', 'created_at', 'is_new', 'is_popular']
     search_fields = ['title', 'supplier_id',]
     list_filter = ['category', 'created_at']
     list_per_page = 15
+    list_editable = ['is_new', 'is_popular']
 
     def update_selected_products(self, request, queryset):
         for product in queryset:

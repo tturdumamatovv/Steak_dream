@@ -49,9 +49,19 @@ class CategoryOnlyListView(ListAPIView):
         return Response(serializer.data)
 
 
-# class PopularProducts(ListAPIView):
-#     pass
-#
-#
-# class CheckProductSizes(ListAPIView):
-#     pass
+class PopularProductsView(ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get(self, request, *args, **kwargs):
+        products = Product.objects.filter(is_popular=True)
+        product_serializer = ProductSerializer(products, many=True, context={'request': request})
+        return Response({'products': product_serializer.data})
+
+
+class NewProductsView(ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get(self, request, *args, **kwargs):
+        products = Product.objects.filter(is_new=True)
+        product_serializer = ProductSerializer(products, many=True, context={'request': request})
+        return Response({'products': product_serializer.data})

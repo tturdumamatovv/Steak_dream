@@ -7,8 +7,8 @@ from apps.catalog.api.views import (
     CategoryListView,
     ProductSearchView,
     CategoryOnlyListView,
-    # PopularProducts,
-    # CheckProductSizes
+    PopularProductsView,
+    NewProductsView
 )
 
 urlpatterns = [
@@ -16,7 +16,7 @@ urlpatterns = [
           path('category/<slug:slug>/', ProductListByCategorySlugView.as_view(), name='category'),
           path('categories/', CategoryListView.as_view(), name='category-list'),
           path('categories/only/', CategoryOnlyListView.as_view(), name='category-only-list'),
-          # path('popular/products/', PopularProducts.as_view(), name='popular-products'),
-          # path('check/products/', CheckProductSizes.as_view(), name='check-products'),
+          path('popular-products/', PopularProductsView.as_view(), name='popular-products'),
+          path('new-products/', NewProductsView.as_view(), name='new-products'),
 
 ]

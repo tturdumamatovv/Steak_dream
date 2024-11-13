@@ -57,6 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                                                 blank=True)
     last_order = models.DateTimeField(null=True, blank=True, verbose_name=_("Последний заказ"))
     bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    qr_code_data = models.CharField(max_length=255, blank=True, null=True)
     qr_code = models.ImageField(upload_to='qr_codes', blank=True, null=True)
     secret_key = models.UUIDField(default=uuid.uuid4, editable=False)
 
@@ -83,11 +84,13 @@ class User(AbstractBaseUser, PermissionsMixin):
                 pass
 
         qr_data = f"{self.phone_number}%{self.secret_key}"
+        qr_code_data = f"{self.phone_number}%{self.secret_key}"
         qr_img = qrcode.make(qr_data)
         buffer = BytesIO()
         qr_img.save(buffer, format="PNG")
         file_name = f"qr_code_{self.phone_number}.png"
         self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
+        self.qr_code_data = qr_code_data
 
     def regenerate_secret_key(self):
         self.secret_key = uuid.uuid4()

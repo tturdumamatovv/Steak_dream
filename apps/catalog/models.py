@@ -39,6 +39,8 @@ class Category(models.Model, ImageProcessingMixin):
 
 
 class Product(models.Model, ImageProcessingMixin):
+    is_new = models.BooleanField(verbose_name=_('Новый'), default=False)
+    is_popular = models.BooleanField(verbose_name=_('Популярный'), default=False)
     min_total_amount = models.IntegerField(verbose_name=_('Минимальная сумма заказа'), null=True, blank=True, default=1)
     supplier_integration = models.ForeignKey(Supplier, verbose_name=_('Поставщик'), on_delete=models.CASCADE, null=True, blank=True)
     supplier_id = models.CharField(verbose_name=_('ID поставщика'), max_length=50, null=True, blank=True, unique=True)
@@ -66,8 +68,6 @@ class Product(models.Model, ImageProcessingMixin):
             self.discount_price = self.price - self.discount
         else:
             self.discount_price = self.price
-
-        self.save()
 
 
     def save(self, *args, **kwargs):
