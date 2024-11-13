@@ -17,6 +17,8 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
+from apps.catalog.models import Product
+
 
 class CustomUserManager(BaseUserManager):
     @transaction.atomic
@@ -60,6 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     qr_code_data = models.CharField(max_length=255, blank=True, null=True)
     qr_code = models.ImageField(upload_to='qr_codes', blank=True, null=True)
     secret_key = models.UUIDField(default=uuid.uuid4, editable=False)
+    favorite_products = models.ManyToManyField(Product, blank=True, verbose_name=_('Избранные товары'))
 
     objects = CustomUserManager()
 

@@ -47,7 +47,7 @@ class Restaurant(models.Model):
 
 class Order(models.Model):
     type = models.CharField(verbose_name=_('Способ получения'), max_length=255,
-                            choices=[('delivery', 'Доставка'), ('pickup', 'Самовывоз')])
+                            choices=[('delivery', 'Доставка'), ('pickup', 'Самовывоз')], default='pickup')
     infosystem = models.CharField(verbose_name=_('Инфосистема'), max_length=255, blank=True, null=True)
     status = models.CharField(verbose_name=_('Статус'), max_length=255,
                               choices=[('created', 'Создан'), ('paid', 'Оплачен'), ('delivered', 'Доставлен')])
@@ -57,14 +57,14 @@ class Order(models.Model):
         ('elcart', 'Эльекарт'),
         ('elsom', 'Элсом'),
         ('o_money', 'О деньги')
-    ])
+    ], default='cash')
     change = models.FloatField(verbose_name=_('Сдача'), default=0)
     bonus_used = models.FloatField(verbose_name=_('Использованные бонусы'), default=0)
     total = models.FloatField(verbose_name=_('Итого'), default=0)
     user = models.ForeignKey(User, verbose_name=_('Пользователь'), on_delete=models.CASCADE)
     addresses = models.ForeignKey('authentication.UserAddress', verbose_name=_('Адрес доставки'),
-                                  on_delete=models.CASCADE)
-    comment = models.TextField(verbose_name=_('Комментарий'))
+                                  on_delete=models.CASCADE, blank=True, null=True)
+    comment = models.TextField(verbose_name=_('Комментарий'), blank=True, null=True)
     created_at = models.DateTimeField(verbose_name=_('Дата создания'), auto_now_add=True, blank=True)
 
     class Meta:

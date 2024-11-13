@@ -249,6 +249,20 @@ class UseBonusesView(APIView):
 
                 user.save()
 
+                
+                # Здесь вы можете добавить товары в заказ, если они известны
+                order = Order.objects.create(
+                    user=user,
+                    bonus_spent=spent_bonuses,  # Или другое значение, если нужно
+                    bonus_earned=earned_bonuses  # Установите значение, если есть
+                )
+                product_ids = request.data.get('product_ids', [])
+                print(product_ids)
+
+                for product_id in product_ids:
+                    product = Product.objects.get(id=product_id)
+                    OrderItem.objects.create(order=order, product=product)
+
                 return Response({
                     'message': 'Bonuses used successfully',
                     'new_bonus': user.bonus,
@@ -310,19 +324,8 @@ class ApplyPromoCodeView(generics.GenericAPIView):
         promo_code = PromoCode.objects.filter(code=code).first()
 
         if promo_code and promo_code.apply_to_user(request.user):
-            # Создаем заказ, используя модель из приложения orders
-            order = Order.objects.create(
-                user=request.user,
-                bonus_spent=promo_code.coins_amount,  # Или другое значение, если нужно
-                bonus_earned=0  # Установите значение, если есть
-            )
-
-            # Здесь вы можете добавить товары в заказ, если они известны
-            product_ids = request.data.get('product_ids', [])
-            for product_id in product_ids:
-                product = Product.objects.get(id=product_id)
-                OrderItem.objects.create(order=order, product=product)
-
-            return Response({"message": "Промокод успешно применен!", "order_id": order.id}, status=status.HTTP_200_OK)
+            return Response({"message": "Промокод успешно применен!"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Промокод недействителен или уже использован."}, status=status.HTTP_400_BAD_REQUEST)
+
+

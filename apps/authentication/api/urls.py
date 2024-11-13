@@ -14,8 +14,6 @@ from apps.authentication.api.views import (
 )
 
 
-
-
 urlpatterns = [
     path('login/', UserLoginView.as_view(), name='user_registration'),
     path('verify-code/', VerifyCodeView.as_view(), name='verify_code'),
