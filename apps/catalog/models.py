@@ -39,6 +39,7 @@ class Category(models.Model, ImageProcessingMixin):
 
 
 class Product(models.Model, ImageProcessingMixin):
+    min_total_amount = models.IntegerField(verbose_name=_('Минимальная сумма заказа'), null=True, blank=True, default=1)
     supplier_integration = models.ForeignKey(Supplier, verbose_name=_('Поставщик'), on_delete=models.CASCADE, null=True, blank=True)
     supplier_id = models.CharField(verbose_name=_('ID поставщика'), max_length=50, null=True, blank=True, unique=True)
     category = models.ForeignKey(Category, verbose_name=_('Категория'), on_delete=models.CASCADE, related_name='products', null=True, blank=True)
