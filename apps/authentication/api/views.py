@@ -26,7 +26,7 @@ from .serializers import (
     UserAddressSerializer,
     UserAddressUpdateSerializer,
     NotificationSerializer,
-    UserBonusSerializer, QRCodeRequestSerializer, PhoneBonusRequestSerializer, ChildSerializer
+    UserBonusSerializer, QRCodeRequestSerializer, PhoneBonusRequestSerializer, ChildSerializer, ChildListSerializer
 )
 
 
@@ -355,5 +355,13 @@ class ChildCreateView(generics.CreateAPIView):
             raise serializers.ValidationError("Возраст ребенка должен быть 18 лет или меньше.")
         
         serializer.save(user=user)
+
+
+class UserChildrenListView(generics.ListAPIView):
+    serializer_class = ChildListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Child.objects.filter(user=self.request.user)
 
 

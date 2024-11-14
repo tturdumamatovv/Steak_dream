@@ -125,3 +125,9 @@ class ChildSerializer(serializers.ModelSerializer):
         model = Child
         fields = ['id', 'user', 'name', 'date_of_birth']
         read_only_fields = ['user']
+
+
+class ChildListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Child
+        fields = ['id', 'name', 'date_of_birth']
