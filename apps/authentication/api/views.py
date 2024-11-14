@@ -66,7 +66,7 @@ class UserLoginView(generics.CreateAPIView):
 
         response_data = {
             'message': 'Confirmation code sent successfully.',
-            # 'code': confirmation_code
+            'code': confirmation_code
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -247,9 +247,6 @@ class UseBonusesView(APIView):
                     bonus_earned=earned_bonuses
                 )
 
-                user.save()
-
-                
                 # Здесь вы можете добавить товары в заказ, если они известны
                 order = Order.objects.create(
                     user=user,
@@ -262,6 +259,7 @@ class UseBonusesView(APIView):
                 for product_id in product_ids:
                     product = Product.objects.get(id=product_id)
                     OrderItem.objects.create(order=order, product=product)
+                user.save()
 
                 return Response({
                     'message': 'Bonuses used successfully',
