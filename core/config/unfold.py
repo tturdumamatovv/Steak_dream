@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 UNFOLD = {
+    "DASHBOARD_CALLBACK": "apps.common.views.dashboard_callback",
     "SITE_TITLE": "Админ панель Steak Dream",
     "SITE_HEADER": "Админ панель Steak Dream",
     "SITE_URL": "/",

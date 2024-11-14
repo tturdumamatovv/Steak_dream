@@ -28,6 +28,7 @@ class UserAdmin(ModelAdmin):
     list_display = ['phone_number', 'date_of_birth']  # Добавьте нужные поля
     search_fields = ['phone_number', 'date_of_birth']
     readonly_fields = ['qr_code_data']
+    exclude = ['favorite_products']
     inlines = [UserAddressInline, ChildInline]
 
     def check_birthdays(self, request, queryset):

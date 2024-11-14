@@ -1,21 +1,18 @@
 import os
 import uuid
 from io import BytesIO
-from urllib.parse import urlparse, parse_qs
 
 import qrcode
-from django.core.files.base import ContentFile
-from django.db import models
-from django.shortcuts import get_object_or_404
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
     PermissionsMixin
 )
-from django.conf import settings
+from django.core.files.base import ContentFile
+from django.db import models
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from apps.catalog.models import Product
 
@@ -172,7 +169,8 @@ class UserAddress(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f'{self.city}'
+        result = self.city if self.city else ''
+        return f'{result}'
 
 
 class BonusSystemSettings(models.Model):
@@ -219,7 +217,8 @@ class PromoCode(models.Model):
     usage_limit = models.PositiveIntegerField(default=1, verbose_name=_("Количество использований"))
     expiration_date = models.DateTimeField(null=True, blank=True, verbose_name=_("Дата окончания действия"))
     coins_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_("Количество койнов"))
-    image = models.ImageField(upload_to='promo_images/', blank=True, null=True, verbose_name=_("Изображение для попапа"))
+    image = models.ImageField(upload_to='promo_images/', blank=True, null=True,
+                              verbose_name=_("Изображение для попапа"))
     users = models.ManyToManyField(User, blank=True, related_name='promo_codes', verbose_name=_("Пользователи"))
 
     def is_valid(self):

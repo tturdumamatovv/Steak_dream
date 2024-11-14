@@ -41,7 +41,7 @@ class APIOrderSender:
                         "name": order.user.full_name,
                         "phone": order.user.phone_number
                     },
-                    "address": order.addresses.city,
+                    "address": order.addresses.city if order.addresses else "",
                     "comment": order.comment,
                     "items": item_data
                 }
