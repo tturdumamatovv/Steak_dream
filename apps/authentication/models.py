@@ -47,6 +47,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False, verbose_name=_('Работник'))
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True, max_length=255,
                                         verbose_name=_('Изображение профиля'))
+    gender = models.CharField(max_length=1, blank=True, null=True, verbose_name=_('Пол'), choices=[('M', 'Мужской'), ('F', 'Женский'), ('O', 'Другой')])
     full_name = models.CharField(max_length=255, blank=True, verbose_name=_('Полное имя'))
     date_of_birth = models.DateField(blank=True, null=True, verbose_name=_('Дата рождения'))
     email = models.EmailField(blank=True, verbose_name=_('Имейл'))

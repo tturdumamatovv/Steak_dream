@@ -257,7 +257,7 @@ class UseBonusesView(APIView):
                 print(product_ids)
 
                 for product_id in product_ids:
-                    product = Product.objects.get(id=product_id)
+                    product = Product.objects.get(supplier_id=product_id)
                     OrderItem.objects.create(order=order, product=product)
                 user.save()
 

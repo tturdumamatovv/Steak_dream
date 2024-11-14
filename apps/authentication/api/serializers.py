@@ -34,7 +34,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'phone_number', 'profile_picture', 'full_name', 'date_of_birth',
+        fields = ('id', 'phone_number', 'profile_picture', 'full_name', 'date_of_birth', 'gender',
                   'email', 'first_visit', 'has_profile_picture', 'receive_notifications', 'bonus', 'qr_code')
         read_only = ('receive_notifications',)
 
