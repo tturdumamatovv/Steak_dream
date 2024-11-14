@@ -1,7 +1,8 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from apps.catalog.models import Product, Category, Tag, PromotionalProduct, UserPromotionalProduct
+from apps.authentication.models import UserPromotionalProduct
+from apps.catalog.models import Product, Category, Tag, PromotionalProduct
 
 
 class TagSerializer(serializers.ModelSerializer):

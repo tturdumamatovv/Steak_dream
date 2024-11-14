@@ -2,12 +2,12 @@ from colorfield.fields import ColorField
 from django.db import models
 from slugify import slugify
 from django.utils import timezone
-from apps.authentication.models import User  # Импортируйте модель пользователя, если нужно
 
 from apps.common.mixins import ImageProcessingMixin
 from django.utils.translation import gettext_lazy as _
 
 from apps.yaros_connector.models import Supplier
+
 
 
 # Create your models here.
@@ -119,13 +119,3 @@ class PromotionalProduct(models.Model):
         return self.start_time <= timezone.now() <= self.end_time
 
 
-class UserPromotionalProduct(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_promotions')
-    promotional_product = models.ForeignKey(PromotionalProduct, on_delete=models.CASCADE, related_name='user_counters')
-    purchased_quantity = models.PositiveIntegerField(default=0, verbose_name='Купленное количество')
-
-    class Meta:
-        unique_together = ('user', 'promotional_product')  # Уникальная связь между пользователем и акционным продуктом
-
-    def __str__(self):
-        return f"{self.user.phone_number} - {self.promotional_product.product.title} (Куплено: {self.purchased_quantity})"

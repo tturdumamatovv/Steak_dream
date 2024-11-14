@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
-from apps.catalog.models import Product
+from apps.catalog.models import Product, PromotionalProduct
 
 
 class CustomUserManager(BaseUserManager):
@@ -248,3 +248,15 @@ class PromoCode(models.Model):
 
     def __str__(self):
         return self.code
+
+
+class UserPromotionalProduct(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_promotions')
+    promotional_product = models.ForeignKey(PromotionalProduct, on_delete=models.CASCADE, related_name='user_counters')
+    purchased_quantity = models.PositiveIntegerField(default=0, verbose_name='Купленное количество')
+
+    class Meta:
+        unique_together = ('user', 'promotional_product')  # Уникальная связь между пользователем и акционным продуктом
+
+    def __str__(self):
+        return f"{self.user.phone_number} - {self.promotional_product.product.title} (Куплено: {self.purchased_quantity})"

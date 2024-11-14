@@ -6,9 +6,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from django.utils import timezone
 
-from apps.catalog.models import Category, Product, PromotionalProduct, UserPromotionalProduct
+from apps.catalog.models import Category, Product, PromotionalProduct
 from .filters import ProductFilter
 from .serializers import CategoryProductSerializer, ProductSerializer, CategoryOnlySerializer, PromotionalProductSerializer, UserPromotionalProductSerializer
+from ...authentication.models import UserPromotionalProduct
 
 
 class ProductListByCategorySlugView(ListAPIView):
