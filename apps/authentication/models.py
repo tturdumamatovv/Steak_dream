@@ -13,6 +13,7 @@ from django.db import models
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 from apps.catalog.models import Product
 
@@ -131,16 +132,20 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Child(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='children', verbose_name=_("Пользователь"))
-    name = models.CharField(max_length=255, verbose_name=_("Имя"))
-    date_of_birth = models.DateField(verbose_name=_("Дата рождения"))
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='children')
+    name = models.CharField(max_length=255, verbose_name="Имя")
+    date_of_birth = models.DateField(verbose_name="Дата рождения")
 
     class Meta:
-        verbose_name = _("Ребенок")
-        verbose_name_plural = _("Дети")
+        verbose_name = "Ребенок"
+        verbose_name_plural = "Дети"
 
     def __str__(self):
         return self.name
+
+    def age(self):
+        """Возвращает возраст ребенка в годах."""
+        return timezone.now().year - self.date_of_birth.year
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -183,6 +188,8 @@ class BonusSystemSettings(models.Model):
                                                verbose_name=_('Бонус за день рождения детей'))
     order_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_('Бонус за заказ'))
     created_at = models.DateTimeField(auto_now_add=True)
+    max_children = models.PositiveIntegerField(default=5, verbose_name="Максимальное количество детей")
+    max_age = models.PositiveIntegerField(default=18, verbose_name="Максимальный возраст для ребенка")
 
     def __str__(self):
         return f'{self.registration_bonus}'

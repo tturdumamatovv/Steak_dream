@@ -3,14 +3,15 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from drf_spectacular.utils import extend_schema
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils import timezone
 
 from apps.authentication.models import (
     User,
-    UserAddress, BonusTransaction, PromoCode
+    UserAddress, BonusTransaction, PromoCode, Child, BonusSystemSettings
 )
 from apps.authentication.utils import (
     send_sms,
@@ -25,7 +26,7 @@ from .serializers import (
     UserAddressSerializer,
     UserAddressUpdateSerializer,
     NotificationSerializer,
-    UserBonusSerializer, QRCodeRequestSerializer, PhoneBonusRequestSerializer
+    UserBonusSerializer, QRCodeRequestSerializer, PhoneBonusRequestSerializer, ChildSerializer
 )
 
 
@@ -325,5 +326,25 @@ class ApplyPromoCodeView(generics.GenericAPIView):
             return Response({"message": "Промокод успешно применен!"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Промокод недействителен или уже использован."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChildCreateView(generics.CreateAPIView):
+    serializer_class = ChildSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        settings = BonusSystemSettings.objects.first()  # Получаем настройки
+
+        # Убедитесь, что пользователь не превышает лимит детей
+        if user.children.count() >= (settings.max_children if settings else 5):
+            raise serializers.ValidationError("Достигнуто максимальное количество детей.")
+        
+        # Убедитесь, что возраст ребенка соответствует критериям
+        date_of_birth = serializer.validated_data.get('date_of_birth')
+        if date_of_birth and (timezone.now().year - date_of_birth.year) > (settings.max_age if settings else 18):
+            raise serializers.ValidationError("Возраст ребенка должен быть 18 лет или меньше.")
+        
+        serializer.save(user=user)
 
 

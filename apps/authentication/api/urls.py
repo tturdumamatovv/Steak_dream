@@ -11,6 +11,7 @@ from apps.authentication.api.views import (
     NotificationSettingsAPIView,
     UseBonusesView,
     ApplyPromoCodeView,
+    ChildCreateView,
 )
 
 
@@ -25,4 +26,5 @@ urlpatterns = [
     path('notification-settings/', NotificationSettingsAPIView.as_view(), name='notification-settings'),
     path('use-bonuses/', UseBonusesView.as_view(), name='use_bonuses'),
     path('apply-promo-code/', ApplyPromoCodeView.as_view(), name='apply_promo_code'),
+    path('add-child/', ChildCreateView.as_view(), name='add_child'),
 ]

@@ -77,8 +77,8 @@ UNFOLD = {
     #     },
     # },
     "SIDEBAR": {
-        "show_search": True,  # Отключить поиск в именах приложений и моделей
-        "show_all_applications": True,  # Отключить раскрывающееся меню со всеми приложениями и моделями
+        "show_search": True,
+        "show_all_applications": True,
         "navigation": [
             {
                 "title": _("Чат"),
@@ -118,7 +118,18 @@ UNFOLD = {
                         "icon": "account_balance",
                         "link": reverse_lazy("admin:authentication_bonustransaction_changelist"),
                     },
-                    
+                ],
+            },
+            {
+                "title": _("Настройки бонусной системы"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Настройки"),
+                        "icon": "settings",
+                        "link": reverse_lazy("admin:authentication_bonussystemsettings_changelist"),
+                    },
                 ],
             },
             {

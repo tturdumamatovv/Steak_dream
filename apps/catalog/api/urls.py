@@ -8,7 +8,8 @@ from apps.catalog.api.views import (
     ProductSearchView,
     CategoryOnlyListView,
     PopularProductsView,
-    NewProductsView, AddFavoriteView, FavoriteProductsView
+    NewProductsView, AddFavoriteView, FavoriteProductsView,
+    PromotionalProductListView, UpdateUserPromotionalProductView
 )
 
 urlpatterns = [
@@ -20,5 +21,7 @@ urlpatterns = [
     path('new-products/', NewProductsView.as_view(), name='new-products'),
     path('add-favorite/<int:product_id>/', AddFavoriteView.as_view(), name='add_favorite'),
     path('favorite/products/', FavoriteProductsView.as_view(), name='favorite_products'),
+    path('promotional-products/', PromotionalProductListView.as_view(), name='promotional_products'),
+    path('update-promotional-product/', UpdateUserPromotionalProductView.as_view(), name='update_user_promotional_product'),
 
 ]

@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from apps.authentication.models import (
     User,
-    UserAddress, BonusTransaction
+    UserAddress, BonusTransaction, Child
 )
 from core import settings
 
@@ -118,3 +118,10 @@ class PhoneBonusRequestSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=20, help_text="Enter the user's phone number.")
     spent_bonuses = serializers.IntegerField(help_text="The amount of bonuses to be spent.", min_value=0)
     earned_bonuses = serializers.IntegerField(help_text="The amount of bonuses to be earned.", min_value=0)
+
+
+class ChildSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Child
+        fields = ['id', 'user', 'name', 'date_of_birth']
+        read_only_fields = ['user']

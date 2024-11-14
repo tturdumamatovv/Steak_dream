@@ -33,7 +33,6 @@ class UserAdmin(ModelAdmin):
 
     def check_birthdays(self, request, queryset):
         user_ids = list(queryset.values_list('id', flat=True))  # Получаем список ID выбранных пользователей
-        check_birthdays_for_selected_users.delay(user_ids)  # Вызываем новую задачу для проверки дней рождения
         self.message_user(request, f"Запрос на проверку дней рождения для выбранных пользователей отправлен.")
 
     actions = [check_birthdays]

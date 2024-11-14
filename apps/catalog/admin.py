@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
 
-from .models import Category, Product
+from .models import Category, Product, PromotionalProduct
 from .tasks import update_product_task
 
 
@@ -35,3 +35,8 @@ class ProductAdmin(ModelAdmin):
     # Link the action to the admin
     actions = [update_selected_products]
     update_selected_products.short_description = "Обновить данные для выбранных товаров"
+
+
+@admin.register(PromotionalProduct)
+class PromotionalProductAdmin(admin.ModelAdmin):
+    list_display = ['product', 'start_time', 'end_time', 'description']

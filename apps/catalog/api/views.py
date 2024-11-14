@@ -4,10 +4,11 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
+from django.utils import timezone
 
-from apps.catalog.models import Category, Product
+from apps.catalog.models import Category, Product, PromotionalProduct, UserPromotionalProduct
 from .filters import ProductFilter
-from .serializers import CategoryProductSerializer, ProductSerializer, CategoryOnlySerializer
+from .serializers import CategoryProductSerializer, ProductSerializer, CategoryOnlySerializer, PromotionalProductSerializer, UserPromotionalProductSerializer
 
 
 class ProductListByCategorySlugView(ListAPIView):
@@ -100,3 +101,32 @@ class FavoriteProductsView(ListAPIView):
         favorite_products = user.favorite_products.all()
         product_serializer = ProductSerializer(favorite_products, many=True, context={'request': request})
         return Response({'products': product_serializer.data})
+
+
+class PromotionalProductListView(ListAPIView):
+    queryset = PromotionalProduct.objects.all()
+    serializer_class = PromotionalProductSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().filter(start_time__lte=timezone.now(), end_time__gte=timezone.now())
+
+
+class UpdateUserPromotionalProductView(APIView):
+    def post(self, request, *args, **kwargs):
+        product_id = request.data.get('product_id')
+        quantity = request.data.get('quantity', 1)
+
+        try:
+            promotional_product = PromotionalProduct.objects.get(product_id=product_id)
+        except PromotionalProduct.DoesNotExist:
+            return Response({'error': 'Акционный продукт не найден'}, status=status.HTTP_404_NOT_FOUND)
+
+        user_promotion, created = UserPromotionalProduct.objects.get_or_create(
+            user=request.user,
+            promotional_product=promotional_product
+        )
+
+        user_promotion.purchased_quantity += quantity
+        user_promotion.save()
+
+        return Response({'message': 'Счетчик обновлен', 'purchased_quantity': user_promotion.purchased_quantity}, status=status.HTTP_200_OK)

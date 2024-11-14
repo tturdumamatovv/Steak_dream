@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from apps.catalog.models import Product, Category, Tag
+from apps.catalog.models import Product, Category, Tag, PromotionalProduct, UserPromotionalProduct
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -68,3 +68,16 @@ class CategoryOnlySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'title', 'slug', 'image', ]
+
+
+class PromotionalProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromotionalProduct
+        fields = ['id', 'product', 'start_time', 'end_time', 'description', 'image', 'size_counter']
+
+
+class UserPromotionalProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPromotionalProduct
+        fields = ['user', 'promotional_product', 'purchased_quantity']
+        read_only_fields = ['user', 'promotional_product']
