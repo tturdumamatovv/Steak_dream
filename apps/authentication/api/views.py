@@ -114,20 +114,20 @@ class VerifyCodeView(generics.CreateAPIView):
             'first_visit': user.first_visit
         }, status=status.HTTP_200_OK)
 
+from rest_framework.views import exception_handler
 
 class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        print(self.request.user)
         return self.request.user
 
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
         profile_picture = request.data.get('profile_picture')
 
-        # Если пользователь не загрузил фотографию, устанавливаем дефолтную
+        # Set default profile picture if none is provided
         if not profile_picture and not instance.profile_picture:
             instance.profile_picture = settings.DEFAULT_PROFILE_PICTURE_URL
 
@@ -140,6 +140,15 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
             instance.save()
 
         return Response(serializer.data)
+
+    def handle_exception(self, exc):
+        response = exception_handler(exc, self)
+        if response is not None and response.status_code == status.HTTP_400_BAD_REQUEST:
+            # Extract first error message
+            error_message = next(iter(response.data.values()))[0]
+            return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().handle_exception(exc)
 
 
 class UserAddressCreateAPIView(generics.ListCreateAPIView):
