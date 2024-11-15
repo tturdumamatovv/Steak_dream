@@ -9,6 +9,7 @@ from django.conf import settings
 from apps.services.bonuces import apply_bonus_points
 from apps.services.firebase_notification import send_firebase_notification
 from apps.services.get_coordinates import get_coordinates
+from apps.orders.models import GoogleMap
 from .models import Restaurant, Order
 
 from apps.yaros_connector.order_sender import APIOrderSender  # Импортируем класс отправки заказа
@@ -17,8 +18,9 @@ from ..yaros_connector.models import Supplier
 
 @receiver(pre_save, sender=Restaurant)
 def set_coordinates(sender, instance, **kwargs):
+    token = GoogleMap.objects.first()
     if instance.address and (instance.latitude is None or instance.longitude is None):
-        latitude, longitude = get_coordinates(instance.address, )
+        latitude, longitude = get_coordinates(instance.address, token.google_map_api_key)
         if latitude and longitude:
             instance.latitude = latitude
             instance.longitude = longitude
