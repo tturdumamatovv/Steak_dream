@@ -2,8 +2,8 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from apps.orders.models import Order, OrderItem
-from .serializers import OrderSerializer, OrderItemSerializer
+from apps.orders.models import Order, OrderItem, Restaurant
+from .serializers import OrderSerializer, OrderItemSerializer, RestaurantSerializer
 from drf_spectacular.utils import extend_schema
 
 
@@ -41,3 +41,11 @@ class OrderCreateView(APIView):
 
             return Response(order_serializer.data, status=status.HTTP_201_CREATED)
         return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RestaurantListView(generics.ListAPIView):
+    serializer_class = RestaurantSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Restaurant.objects.all()

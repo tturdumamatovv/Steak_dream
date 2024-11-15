@@ -1,6 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
-from apps.orders.models import Order, OrderItem
+from apps.orders.models import Order, OrderItem, Restaurant
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -23,3 +23,9 @@ class OrderSerializer(serializers.ModelSerializer):
             for item_data in order_items_data:
                 OrderItem.objects.create(order=order, **item_data)
         return order
+
+
+class RestaurantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Restaurant
+        fields = ['id', 'name', 'address', 'phone_number', 'email', 'opening_hours', 'closing_hours']

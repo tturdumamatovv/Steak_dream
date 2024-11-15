@@ -235,6 +235,18 @@ UNFOLD = {
                     },
                 ],
             },
+            {
+                "title": _("Рестораны"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Список ресторанов"),
+                        "icon": "restaurant",
+                        "link": reverse_lazy("admin:orders_restaurant_changelist"),
+                    },
+                ],
+            },
         ],
     },
     # "TABS": [

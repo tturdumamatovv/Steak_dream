@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import TabularInline, ModelAdmin
 
-from .models import Order, OrderItem, GoogleMap
+from .models import Order, OrderItem, Restaurant, GoogleMap
 from ..yaros_connector.models import Supplier
 from ..yaros_connector.order_sender import APIOrderSender
 
@@ -24,6 +24,12 @@ class OrderAdmin(ModelAdmin):
             order_sender = APIOrderSender(order=instance, supplier=supplier)
             response = order_sender.prepare_order(instance)  # Отправляем заказ
             print("Ответ от Ярос:", response)  # Логируем ответ от Ярос
+
+
+@admin.register(Restaurant)
+class RestaurantAdmin(ModelAdmin):
+    list_display = ['name', 'address', 'phone_number', 'email']
+    search_fields = ['name', 'address']
 
 
 @admin.register(GoogleMap)
