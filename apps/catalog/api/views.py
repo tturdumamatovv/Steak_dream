@@ -72,25 +72,27 @@ class NewProductsView(ListAPIView):
 
 
 class AddFavoriteView(APIView):
-    def post(self, request):
-        product_id = request.data.get('product_id')
+    def post(self, request, product_id):
+        # Get the user from the request
+        if not request.user.is_authenticated:
+            return Response({"error": "Пользователь не авторизован"})
         user = request.user
 
-        if not product_id:
-            return Response({'error': 'Product ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
+            # Get the product using the product_id from the URL
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        # Toggle the product in the user's favorite products
         if product in user.favorite_products.all():
             user.favorite_products.remove(product)
-            message = 'Product removed from favorites'
+            message = 'Продукт был удален из избранных'
         else:
             user.favorite_products.add(product)
-            message = 'Product added to favorites'
+            message = 'Продукт был добавлен в избранное'
 
+        # Return the response with a success message
         return Response({'message': message}, status=status.HTTP_200_OK)
 
 
@@ -98,6 +100,9 @@ class FavoriteProductsView(ListAPIView):
     serializer_class = ProductSerializer
 
     def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response({"error": "Пользователь не авторизован"})
+
         user = request.user
         favorite_products = user.favorite_products.all()
         product_serializer = ProductSerializer(favorite_products, many=True, context={'request': request})

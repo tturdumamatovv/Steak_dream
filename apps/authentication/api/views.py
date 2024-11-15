@@ -6,6 +6,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status, permissions, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.views import exception_handler
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
 
@@ -114,7 +115,6 @@ class VerifyCodeView(generics.CreateAPIView):
             'first_visit': user.first_visit
         }, status=status.HTTP_200_OK)
 
-from rest_framework.views import exception_handler
 
 class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     serializer_class = UserProfileSerializer
