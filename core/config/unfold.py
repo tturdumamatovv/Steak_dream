@@ -223,6 +223,18 @@ UNFOLD = {
                     # },
                 ],
             },
+{
+                "title": _("Общие Настройки"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Настройки Google Карты"),
+                        "icon": "settings",
+                        "link": reverse_lazy("admin:orders_googlemap_changelist"),
+                    },
+                ],
+            },
         ],
     },
     # "TABS": [

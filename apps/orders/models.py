@@ -1,7 +1,7 @@
 import random
 import string
 
-from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
 from geopy.distance import geodesic
 from django.core.validators import MinLengthValidator
@@ -112,3 +112,26 @@ class Report(models.Model):
     class Meta:
         verbose_name = "Отчет"
         verbose_name_plural = "Отчеты"
+
+
+class GoogleMap(models.Model):
+    google_map_api_key = models.CharField(
+        max_length=250, blank=True, null=True, verbose_name=_("Ключ для карты")
+    )
+
+    def clean(self):
+        if GoogleMap.objects.exists() and not self.pk:
+            raise ValidationError(
+                _("Может существовать только один экземпляр модели TelegramBotToken.")
+            )
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # Гарантирует, что всегда существует только один экземпляр
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return "Токен бота Telegram"
+
+    class Meta:
+        verbose_name = _("Google Карта")
+        verbose_name_plural = _("Google Карты")
