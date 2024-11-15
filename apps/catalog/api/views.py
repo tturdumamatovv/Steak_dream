@@ -75,7 +75,7 @@ class AddFavoriteView(APIView):
     def post(self, request, product_id):
         # Get the user from the request
         if not request.user.is_authenticated:
-            return Response({"error": "Пользователь не авторизован"})
+            return Response({"error": "Пользователь не авторизован"}, status=status.HTTP_401_UNAUTHORIZED)
         user = request.user
 
         try:
@@ -101,7 +101,7 @@ class FavoriteProductsView(ListAPIView):
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return Response({"error": "Пользователь не авторизован"})
+            return Response({"error": "Пользователь не авторизован"}, status=status.HTTP_401_UNAUTHORIZED)
 
         user = request.user
         favorite_products = user.favorite_products.all()
