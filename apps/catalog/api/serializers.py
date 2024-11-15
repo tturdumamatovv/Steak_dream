@@ -74,7 +74,7 @@ class CategoryOnlySerializer(serializers.ModelSerializer):
 class PromotionalProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = PromotionalProduct
-        fields = ['id', 'product', 'start_time', 'end_time', 'description', 'image', 'size_counter']
+        fields = ['id', 'product', 'start_time', 'end_time', 'description', 'image', 'required_quantity']
 
 
 class UserPromotionalProductSerializer(serializers.ModelSerializer):
