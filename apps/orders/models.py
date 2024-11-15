@@ -130,7 +130,7 @@ class GoogleMap(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return "Токен бота Telegram"
+        return "Токен Google Карты"
 
     class Meta:
         verbose_name = _("Google Карта")
