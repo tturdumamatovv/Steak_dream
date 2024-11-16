@@ -262,7 +262,9 @@ class UseBonusesView(APIView):
                 order = Order.objects.create(
                     user=user,
                     bonus_spent=spent_bonuses,  # Или другое значение, если нужно
-                    bonus_earned=earned_bonuses  # Установите значение, если есть
+                    bonus_earned=earned_bonuses,  # Установите значение, если есть
+                    status='created'
+
                 )
                 product_ids = request.data.get('product_ids', [])
                 print(product_ids)
