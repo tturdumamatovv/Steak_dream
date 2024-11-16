@@ -274,6 +274,8 @@ class UseBonusesView(APIView):
                         order_item.quantity += 1
                         order_item.amount += product.price
                         order_item.save()
+                    order.total += product.price
+                    order.save()
                 user.save()
 
                 return Response({
