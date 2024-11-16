@@ -118,9 +118,11 @@ class PromotionalProductListView(ListAPIView):
 
 
 class UpdateUserPromotionalProductView(APIView):
+
+    serializer_class = UserPromotionalProductSerializer
     def post(self, request, *args, **kwargs):
-        product_id = request.data.get('product_id')
-        quantity = request.data.get('quantity', 1)
+        product_id = request.data.get('promotional_product')
+        quantity = request.data.get('purchased_quantity', 1)
 
         try:
             promotional_product = PromotionalProduct.objects.get(product_id=product_id)
@@ -136,3 +138,10 @@ class UpdateUserPromotionalProductView(APIView):
         user_promotion.save()
 
         return Response({'message': 'Счетчик обновлен', 'purchased_quantity': user_promotion.purchased_quantity}, status=status.HTTP_200_OK)
+
+
+class UserPromotionalProductView(ListAPIView):
+    serializer_class = UserPromotionalProductSerializer
+
+    def get_queryset(self):
+        return UserPromotionalProduct.objects.filter(user=self.request.user)

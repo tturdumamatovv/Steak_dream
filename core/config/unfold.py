@@ -152,6 +152,16 @@ UNFOLD = {
                         "icon": "local_shipping",
                         "link": reverse_lazy("admin:orders_order_changelist"),
                     },
+                    {
+                        "title": _("Акционные товары"),
+                        "icon": "deployed_code_alert",
+                        "link": reverse_lazy("admin:catalog_promotionalproduct_changelist"),
+                    },
+                    {
+                        "title": _("Промокоды"),
+                        "icon": "app_promo",
+                        "link": reverse_lazy("admin:authentication_promocode_changelist"),
+                    },
                 ],
             },
             {

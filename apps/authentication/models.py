@@ -238,7 +238,7 @@ class PromoCode(models.Model):
     def apply_to_user(self, user):
         """Применяет промокод к пользователю."""
         if self.is_valid() and self.usage_limit > 0:
-            if user not in self.users.all():
+            if user in self.users.all():
                 user.add_bonus(self.coins_amount)
                 self.usage_limit -= 1
                 self.save()

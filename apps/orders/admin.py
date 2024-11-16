@@ -33,5 +33,5 @@ class RestaurantAdmin(ModelAdmin):
 
 
 @admin.register(GoogleMap)
-class GoogleMap(ModelAdmin):
+class GoogleMapAdmin(ModelAdmin):
     pass

@@ -120,6 +120,10 @@ class PhoneBonusRequestSerializer(serializers.Serializer):
     earned_bonuses = serializers.IntegerField(help_text="The amount of bonuses to be earned.", min_value=0)
 
 
+class ApplyPromoCodeSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=10)
+
+
 class ChildSerializer(serializers.ModelSerializer):
     class Meta:
         model = Child

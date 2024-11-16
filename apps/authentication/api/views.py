@@ -27,7 +27,8 @@ from .serializers import (
     UserAddressSerializer,
     UserAddressUpdateSerializer,
     NotificationSerializer,
-    UserBonusSerializer, QRCodeRequestSerializer, PhoneBonusRequestSerializer, ChildSerializer, ChildListSerializer
+    UserBonusSerializer, QRCodeRequestSerializer, PhoneBonusRequestSerializer, ChildSerializer, ChildListSerializer,
+    ApplyPromoCodeSerializer
 )
 
 
@@ -268,7 +269,11 @@ class UseBonusesView(APIView):
 
                 for product_id in product_ids:
                     product = Product.objects.get(supplier_id=product_id)
-                    OrderItem.objects.create(order=order, product=product)
+                    order_item, created = OrderItem.objects.get_or_create(order=order, product=product, quantity=1, amount=product.price)
+                    if not created:
+                        order_item.quantity += 1
+                        order_item.amount += product.price
+                        order_item.save()
                 user.save()
 
                 return Response({
@@ -327,9 +332,13 @@ class UseBonusesByPhoneView(APIView):
 
 
 class ApplyPromoCodeView(generics.GenericAPIView):
+
+    serializer_class = ApplyPromoCodeSerializer
     def post(self, request, *args, **kwargs):
-        code = request.data.get('promo_code')
+        code = request.data.get('code')
         promo_code = PromoCode.objects.filter(code=code).first()
+        print(request.user)
+        print(promo_code)
 
         if promo_code and promo_code.apply_to_user(request.user):
             return Response({"message": "Промокод успешно применен!"}, status=status.HTTP_200_OK)

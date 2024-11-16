@@ -38,5 +38,5 @@ class ProductAdmin(ModelAdmin):
 
 
 @admin.register(PromotionalProduct)
-class PromotionalProductAdmin(admin.ModelAdmin):
+class PromotionalProductAdmin(ModelAdmin):
     list_display = ['product', 'start_time', 'end_time', 'description']

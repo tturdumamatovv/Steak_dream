@@ -80,5 +80,6 @@ class PromotionalProductSerializer(serializers.ModelSerializer):
 class UserPromotionalProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPromotionalProduct
-        fields = ['user', 'promotional_product', 'purchased_quantity']
-        read_only_fields = ['user', 'promotional_product']
+        fields = ['promotional_product', 'purchased_quantity']
+
+
