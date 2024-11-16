@@ -17,7 +17,8 @@ from apps.pages.api.serializers import (
     ContactsSerializer,
     StaticPageSerializer,
     LayOutSerializer,
-    BannerSerializer, MetaDataSerializer, StoriesSerializer, StoriesCheckSerializer, BonuspageSerializer
+    BannerSerializer, MetaDataSerializer, StoriesSerializer, StoriesCheckSerializer, BonuspageSerializer,
+    AvailablePaymentMethodsSerializer
 )
 
 

@@ -5,7 +5,7 @@ from .views import (
     ContactsView,
     StaticPageDetailView,
     LayOutView,
-    BannersView, StoriesView, StoriesViewedView, BonusPageView
+    BannersView, StoriesView, StoriesViewedView, BonusPageView, AvailablePaymentMethodsView
 )
 
 urlpatterns = [
