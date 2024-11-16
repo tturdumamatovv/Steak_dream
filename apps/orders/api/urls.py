@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserOrderListView, UserOrderDetailView, OrderCreateView, RestaurantListView
+from .views import UserOrderListView, UserOrderDetailView, OrderCreateView, RestaurantListView, OrderCancelView
 
 urlpatterns = [
     path('orders/', UserOrderListView.as_view(), name='user-order-list'),
