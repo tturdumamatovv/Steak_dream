@@ -50,7 +50,14 @@ class Order(models.Model):
                             choices=[('delivery', 'Доставка'), ('pickup', 'Самовывоз')], default='pickup')
     infosystem = models.CharField(verbose_name=_('Инфосистема'), max_length=255, blank=True, null=True)
     status = models.CharField(verbose_name=_('Статус'), max_length=255,
-                              choices=[('created', 'Создан'), ('paid', 'Оплачен'), ('delivered', 'Доставлен')])
+                              choices=[
+                                  ('pending', _('В ожидании')),
+                                  ('in_progress', _('В процессе')),
+                                  ('delivery', _('Доставка')),
+                                  ('completed', _('Завершено')),
+                                  ('cancelled', _('Отменено'))
+                              ], default='pending'
+                              )
     pay_method = models.CharField(verbose_name=_('Способ оплаты'), max_length=255, choices=[
         ('cash', 'Наличные'),
         ('visa', 'Виза'),

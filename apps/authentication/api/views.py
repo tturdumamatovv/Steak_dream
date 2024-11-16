@@ -263,8 +263,7 @@ class UseBonusesView(APIView):
                     user=user,
                     bonus_spent=spent_bonuses,  # Или другое значение, если нужно
                     bonus_earned=earned_bonuses,  # Установите значение, если есть
-                    status='created'
-
+                    status='completed'
                 )
                 product_ids = request.data.get('product_ids', [])
                 print(product_ids)

@@ -43,6 +43,20 @@ class OrderCreateView(APIView):
         return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+class OrderCancelView(APIView):
+    def post(self, request, order_id):
+        if not request.user.is_authenticated:
+            return Response({'error': 'Authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        order = Order.objects.get(id=order_id)
+        if order.user != request.user:
+            return Response({'error': 'You are not authorized to cancel this order.'}, status=status.HTTP_403_FORBIDDEN)
+        order.status = 'cancelled'
+        order.save()
+        return Response({'message': 'Order canceled successfully.'}, status=status.HTTP_200_OK)
+
+
 class RestaurantListView(generics.ListAPIView):
     serializer_class = RestaurantSerializer
     permission_classes = [IsAuthenticated]
