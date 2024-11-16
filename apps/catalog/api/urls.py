@@ -25,4 +25,5 @@ urlpatterns = [
     path('update-promotional-product/', UpdateUserPromotionalProductView.as_view(), name='update_user_promotional_product'),
     path('user-promotional-products/', UserPromotionalProductView.as_view(), name='user_promotional_products'),
 
+
 ]

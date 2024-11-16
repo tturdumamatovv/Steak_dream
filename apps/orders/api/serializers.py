@@ -1,9 +1,13 @@
 from django.db import transaction
 from rest_framework import serializers
+
+from apps.catalog.api.serializers import ProductSerializer
 from apps.orders.models import Order, OrderItem, Restaurant
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(many=False)
+
     class Meta:
         model = OrderItem
         fields = ['product', 'quantity', 'amount']
@@ -14,7 +18,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['type', 'infosystem', 'status', 'pay_method', 'change', 'total', 'addresses', 'comment', 'order_items', 'user']
+        fields = ['type', 'infosystem', 'status', 'pay_method', 'change', 'total', 'addresses', 'comment',
+                  'order_items', 'user', 'created_at']
 
     def create(self, validated_data):
         order_items_data = validated_data.pop('order_items')
