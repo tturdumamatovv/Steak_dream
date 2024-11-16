@@ -324,6 +324,20 @@ class SiteSettings(SingletonModel):
         verbose_name_plural = "Настройки сайта"
 
 
+class AvailablePaymentMethods(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Название")
+    logo = models.FileField(upload_to="available_payment_methods", verbose_name="Логотип", blank=True, null=True)
+    is_active = models.BooleanField(verbose_name="Активный", default=True)
+    created_at = models.DateTimeField(verbose_name="Дата создания", auto_now_add=True, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Доступные способы оплаты"
+        verbose_name_plural = "Доступные способы оплаты"
+
+
 class BonusPage(SingletonModel):
     mobile_app_image = models.FileField(upload_to="bonus_pages", verbose_name="Мобильное приложение", blank=True,
                                         null=True)

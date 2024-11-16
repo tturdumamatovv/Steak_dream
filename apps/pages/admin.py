@@ -17,7 +17,7 @@ from apps.pages.models import (
     OrderTypes,
     MainPage,
     Stories,
-    Story, BonusPage, Advertisement, SiteSettings
+    Story, BonusPage, Advertisement, SiteSettings, AvailablePaymentMethods
 )
 from apps.services.firebase_notification import send_firebase_notification
 
@@ -158,10 +158,10 @@ class AdvertisementAdmin(ModelAdmin):
                     # Полный URL для изображения
                     image_url = request.build_absolute_uri(ad.image.url) if ad.image else None
                     print({
-                            'type': 'advertisement',
-                            'ad_id': str(ad.id),
-                            'image_url': image_url
-                        })
+                        'type': 'advertisement',
+                        'ad_id': str(ad.id),
+                        'image_url': image_url
+                    })
 
                     send_firebase_notification(
                         token=user.fcm_token,
@@ -187,7 +187,11 @@ class AdvertisementAdmin(ModelAdmin):
     send_advertisement.short_description = "Отправить выбранную рекламу всем пользователям"
 
 
-
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(ModelAdmin):
+    pass
+
+
+@admin.register(AvailablePaymentMethods)
+class AvailablePaymentMethodsAdmin(ModelAdmin):
     pass

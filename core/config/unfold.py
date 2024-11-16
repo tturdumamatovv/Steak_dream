@@ -209,6 +209,11 @@ UNFOLD = {
                         "icon": "settings",
                         "link": reverse_lazy("admin:pages_sitesettings_changelist"),
                     },
+                    {
+                        "title": _("Доступные способы оплаты"),
+                        "icon": "payment",
+                        "link": reverse_lazy("admin:pages_availablepaymentmethods_changelist"),
+                    },
                 ],
             },
             {

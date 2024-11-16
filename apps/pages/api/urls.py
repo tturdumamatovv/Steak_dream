@@ -22,5 +22,6 @@ urlpatterns = [
     path('stories/', StoriesView.as_view(), name='stories'),
     path('stories/viewed/', StoriesViewedView.as_view(), name='stories'),
     path('bonus/page/', BonusPageView.as_view(), name='bonus-page'),
+    path('availablepaymentmethods/', AvailablePaymentMethodsView.as_view(), name='availablepaymentmethods'),
 
 ]

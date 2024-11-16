@@ -16,7 +16,7 @@ from apps.pages.models import (
     StaticPage,
     Stories,
     Story,
-    StoriesUserCheck, BonusPage
+    StoriesUserCheck, BonusPage, AvailablePaymentMethods
 )
 
 
@@ -212,4 +212,10 @@ class StoriesCheckSerializer(serializers.Serializer):
 class BonuspageSerializer(serializers.ModelSerializer):
     class Meta:
         model = BonusPage
+        fields = '__all__'
+
+
+class AvailablePaymentMethodsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AvailablePaymentMethods
         fields = '__all__'

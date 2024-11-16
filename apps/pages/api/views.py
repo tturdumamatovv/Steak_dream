@@ -10,7 +10,7 @@ from apps.pages.models import (
     Banner,
     MainPage,
     Contacts,
-    StaticPage, Stories, StoriesUserCheck, BonusPage
+    StaticPage, Stories, StoriesUserCheck, BonusPage, AvailablePaymentMethods
 )
 from apps.pages.api.serializers import (
     HomePageSerializer,
@@ -137,3 +137,8 @@ class BonusPageView(APIView):
         page = BonusPage.objects.first()
         serializer = BonuspageSerializer(page, context={'request': request})
         return Response(serializer.data)
+
+
+class AvailablePaymentMethodsView(ListAPIView):
+    queryset = AvailablePaymentMethods.objects.filter(is_active=True)
+    serializer_class = AvailablePaymentMethodsSerializer
