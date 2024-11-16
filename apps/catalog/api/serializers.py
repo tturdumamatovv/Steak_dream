@@ -28,9 +28,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'description', 'price', 'discount_price', 'discount', 'discount_type',  'quantity', 'image', 'tags', 'measure', 'sort_priority', 'category_slug',
+        fields = ['id', 'title', 'description', 'price', 'discount_price', 'discount', 'discount_type', 'quantity',
+                  'image', 'tags', 'measure', 'sort_priority', 'category_slug',
                   'category_name', 'min_total_amount']
-
 
     def get_min_price(self, obj):
         return obj.get_min_price()
@@ -57,6 +57,7 @@ class ProductSerializer(serializers.ModelSerializer):
             return obj.category.title
         return None
 
+
 class CategoryProductSerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True, read_only=True)
 
@@ -78,8 +79,10 @@ class PromotionalProductSerializer(serializers.ModelSerializer):
 
 
 class UserPromotionalProductSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(source='promotional_product.product', many=False)
+    required_quantity = serializers.IntegerField(source='promotional_product.required_quantity', read_only=True)
+
+
     class Meta:
         model = UserPromotionalProduct
-        fields = ['promotional_product', 'purchased_quantity']
-
-
+        fields = ['product', 'purchased_quantity', 'required_quantity']
