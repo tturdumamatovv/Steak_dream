@@ -6,15 +6,21 @@ from apps.orders.models import Order, OrderItem, Restaurant
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(many=False, read_only=True)
+    product = ProductSerializer(many=False)
 
     class Meta:
         model = OrderItem
         fields = ['product', 'quantity', 'amount']
 
 
+class OrderItemCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity', 'amount']
+
+
 class OrderSerializer(serializers.ModelSerializer):
-    order_items = OrderItemSerializer(many=True)
+    order_items = OrderItemCreateSerializer(many=True)
 
     class Meta:
         model = Order
