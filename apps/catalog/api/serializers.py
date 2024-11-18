@@ -25,12 +25,13 @@ class ProductSerializer(serializers.ModelSerializer):
     price = serializers.FloatField()
     discount = serializers.FloatField()
     discount_price = serializers.FloatField()
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = ['id', 'title', 'description', 'price', 'discount_price', 'discount', 'discount_type', 'quantity',
                   'image', 'tags', 'measure', 'sort_priority', 'category_slug',
-                  'category_name', 'min_total_amount']
+                  'category_name', 'min_total_amount', 'is_favorite']
 
     def get_min_price(self, obj):
         return obj.get_min_price()
@@ -43,6 +44,13 @@ class ProductSerializer(serializers.ModelSerializer):
             if min_bonus_price is None or size.bonus_price < min_bonus_price:
                 min_bonus_price = size.bonus_price
         return min_bonus_price
+
+    def get_is_favorite(self, obj):
+        """Проверка, находится ли продукт в избранном у текущего пользователя."""
+        user = self.context.get('request').user  # Получаем пользователя из контекста
+        if user.is_authenticated:
+            return obj in user.favorite_products.all()
+        return False
 
     @extend_schema_field(serializers.CharField)
     def get_category_slug(self, obj):
