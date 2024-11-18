@@ -357,3 +357,6 @@ firebase_key.json
 /media/
 /static/
 /qr_codes/
+
+**/migrations/**
+!**/migrations/__init__.py
