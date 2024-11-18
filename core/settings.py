@@ -88,6 +88,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+DEFAULT_PROFILE_PICTURE_URL='/media/profile_pictures/default-user.jpg'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
