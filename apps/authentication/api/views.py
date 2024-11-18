@@ -1,9 +1,11 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.shortcuts import redirect
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status, permissions, serializers
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.views import exception_handler
@@ -28,7 +30,7 @@ from .serializers import (
     UserAddressUpdateSerializer,
     NotificationSerializer,
     UserBonusSerializer, QRCodeRequestSerializer, PhoneBonusRequestSerializer, ChildSerializer, ChildListSerializer,
-    ApplyPromoCodeSerializer
+    ApplyPromoCodeSerializer, PromoCodeSerializer
 )
 
 
@@ -270,7 +272,8 @@ class UseBonusesView(APIView):
 
                 for product_id in product_ids:
                     product = Product.objects.get(supplier_id=product_id)
-                    order_item, created = OrderItem.objects.get_or_create(order=order, product=product, quantity=1, amount=product.price)
+                    order_item, created = OrderItem.objects.get_or_create(order=order, product=product, quantity=1,
+                                                                          amount=product.price)
                     if not created:
                         order_item.quantity += 1
                         order_item.amount += product.price
@@ -291,52 +294,66 @@ class UseBonusesView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UseBonusesByPhoneView(APIView):
+class MyPromoCodesView(generics.ListAPIView):
+    serializer_class = PromoCodeSerializer
+    permission_classes = [IsAuthenticated]
 
-    @extend_schema(
-        request=PhoneBonusRequestSerializer,
-        responses={200: 'Bonuses used successfully'}
-    )
-    def post(self, request):
-        serializer = PhoneBonusRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            phone_number = serializer.validated_data['phone_number']
-            spent_bonuses = serializer.validated_data['spent_bonuses']
-            earned_bonuses = serializer.validated_data['earned_bonuses']
+    def get_queryset(self):
+        user = self.request.user
+        now = timezone.now()
+        return PromoCode.objects.filter(
+            Q(expiration_date__gte=now) | Q(expiration_date__isnull=True),
+            Q(users__in=[user]) | Q(is_personal=False),
+            usage_limit__gt=0
+        )
 
-            try:
-                user = User.objects.get(phone_number=phone_number)
 
-                if user.bonus < spent_bonuses:
-                    return Response({"error": "Insufficient bonuses"}, status=status.HTTP_400_BAD_REQUEST)
-
-                user.bonus -= spent_bonuses
-                user.bonus += earned_bonuses
-                user.regenerate_secret_key()  # Если нужно сгенерировать новый секретный ключ
-
-                BonusTransaction.objects.create(
-                    user=user,
-                    bonus_spent=spent_bonuses,
-                    bonus_earned=earned_bonuses
-                )
-
-                user.save()
-
-                return Response({
-                    'message': 'Bonuses used successfully',
-                    'new_bonus': user.bonus,
-                    'new_qr_code': user.qr_code.url,  # Если QR код всё ещё нужен
-                }, status=status.HTTP_200_OK)
-
-            except User.DoesNotExist:
-                return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class UseBonusesByPhoneView(APIView):
+#
+#     @extend_schema(
+#         request=PhoneBonusRequestSerializer,
+#         responses={200: 'Bonuses used successfully'}
+#     )
+#     def post(self, request):
+#         serializer = PhoneBonusRequestSerializer(data=request.data)
+#         if serializer.is_valid():
+#             phone_number = serializer.validated_data['phone_number']
+#             spent_bonuses = serializer.validated_data['spent_bonuses']
+#             earned_bonuses = serializer.validated_data['earned_bonuses']
+#
+#             try:
+#                 user = User.objects.get(phone_number=phone_number)
+#
+#                 if user.bonus < spent_bonuses:
+#                     return Response({"error": "Insufficient bonuses"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#                 user.bonus -= spent_bonuses
+#                 user.bonus += earned_bonuses
+#                 user.regenerate_secret_key()  # Если нужно сгенерировать новый секретный ключ
+#
+#                 BonusTransaction.objects.create(
+#                     user=user,
+#                     bonus_spent=spent_bonuses,
+#                     bonus_earned=earned_bonuses
+#                 )
+#
+#                 user.save()
+#
+#                 return Response({
+#                     'message': 'Bonuses used successfully',
+#                     'new_bonus': user.bonus,
+#                     'new_qr_code': user.qr_code.url,  # Если QR код всё ещё нужен
+#                 }, status=status.HTTP_200_OK)
+#
+#             except User.DoesNotExist:
+#                 return Response({"error": "User not found"}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ApplyPromoCodeView(generics.GenericAPIView):
-
     serializer_class = ApplyPromoCodeSerializer
+
     def post(self, request, *args, **kwargs):
         code = request.data.get('code')
         promo_code = PromoCode.objects.filter(code=code).first()
@@ -346,7 +363,8 @@ class ApplyPromoCodeView(generics.GenericAPIView):
         if promo_code and promo_code.apply_to_user(request.user):
             return Response({"message": "Промокод успешно применен!"}, status=status.HTTP_200_OK)
         else:
-            return Response({"error": "Промокод недействителен или уже использован."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Промокод недействителен или уже использован."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class ChildCreateView(generics.CreateAPIView):
@@ -360,12 +378,12 @@ class ChildCreateView(generics.CreateAPIView):
         # Убедитесь, что пользователь не превышает лимит детей
         if user.children.count() >= (settings.max_children if settings else 5):
             raise serializers.ValidationError("Достигнуто максимальное количество детей.")
-        
+
         # Убедитесь, что возраст ребенка соответствует критериям
         date_of_birth = serializer.validated_data.get('date_of_birth')
         if date_of_birth and (timezone.now().year - date_of_birth.year) > (settings.max_age if settings else 18):
             raise serializers.ValidationError("Возраст ребенка должен быть 18 лет или меньше.")
-        
+
         serializer.save(user=user)
 
 
@@ -375,5 +393,3 @@ class UserChildrenListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Child.objects.filter(user=self.request.user)
-
-

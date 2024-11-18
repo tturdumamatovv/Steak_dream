@@ -13,6 +13,7 @@ from apps.authentication.api.views import (
     ApplyPromoCodeView,
     ChildCreateView,
     UserChildrenListView,
+    MyPromoCodesView,
 )
 
 
@@ -26,6 +27,7 @@ urlpatterns = [
     path('user-delete/', UserDeleteAPIView.as_view(), name='user-delete'),
     path('notification-settings/', NotificationSettingsAPIView.as_view(), name='notification-settings'),
     path('use-bonuses/', UseBonusesView.as_view(), name='use_bonuses'),
+    path('my-promo-codes/', MyPromoCodesView.as_view(), name='my_promo_codes'),
     path('apply-promo-code/', ApplyPromoCodeView.as_view(), name='apply_promo_code'),
     path('add-child/', ChildCreateView.as_view(), name='add_child'),
     path('children/', UserChildrenListView.as_view(), name='user_children'),

@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from apps.authentication.models import (
     User,
-    UserAddress, BonusTransaction, Child
+    UserAddress, BonusTransaction, Child, PromoCode
 )
 from core import settings
 
@@ -122,6 +122,12 @@ class PhoneBonusRequestSerializer(serializers.Serializer):
 
 class ApplyPromoCodeSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=10)
+
+
+class PromoCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCode
+        exclude = ['users']
 
 
 class ChildSerializer(serializers.ModelSerializer):
