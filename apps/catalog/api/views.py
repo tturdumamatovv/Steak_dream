@@ -94,8 +94,8 @@ class AddFavoriteView(APIView):
             user.favorite_products.add(product)
             message = 'Продукт был добавлен в избранное'
 
-        # Return the response with a success message
-        return Response({'message': message}, status=status.HTTP_200_OK)
+        is_favorite = product in user.favorite_products.all()
+        return Response({'message': message, 'is_favorite': is_favorite, 'product_id': product.id}, status=status.HTTP_200_OK)
 
 
 class FavoriteProductsView(ListAPIView):
