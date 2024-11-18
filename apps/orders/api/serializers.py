@@ -6,7 +6,7 @@ from apps.orders.models import Order, OrderItem, Restaurant
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(many=False, read_only=True)
+    product = ProductSerializer(many=False)
 
     class Meta:
         model = OrderItem
@@ -15,6 +15,29 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     order_items = OrderItemSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = ['id', 'type', 'infosystem', 'status', 'pay_method', 'change', 'total', 'addresses', 'comment',
+                  'order_items', 'user', 'created_at']
+
+    def create(self, validated_data):
+        order_items_data = validated_data.pop('order_items')
+        with transaction.atomic():
+            order = Order.objects.create(**validated_data)
+            for item_data in order_items_data:
+                OrderItem.objects.create(order=order, **item_data)
+        return order
+
+
+class OrderItemCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity', 'amount']
+
+
+class OrderCreateSerializer(serializers.ModelSerializer):
+    order_items = OrderItemCreateSerializer(many=True)
 
     class Meta:
         model = Order

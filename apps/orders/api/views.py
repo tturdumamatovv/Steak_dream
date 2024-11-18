@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from apps.orders.models import Order, OrderItem, Restaurant
-from .serializers import OrderSerializer, OrderItemSerializer, RestaurantSerializer
+from .serializers import OrderSerializer, OrderItemSerializer, RestaurantSerializer, OrderCreateSerializer
 from drf_spectacular.utils import extend_schema
 
 
@@ -26,16 +26,16 @@ class UserOrderDetailView(generics.RetrieveAPIView):
 
 class OrderCreateView(APIView):
     @extend_schema(
-        request=OrderSerializer,
+        request=OrderCreateSerializer,
         responses={
-            201: OrderSerializer,
+            201: OrderCreateSerializer,
             400: 'Bad Request'
         },
         description="Создание нового заказа с предметами."
     )
     def post(self, request):
         request.data['user'] = request.user.id  # Устанавливаем пользователя
-        order_serializer = OrderSerializer(data=request.data)
+        order_serializer = OrderCreateSerializer(data=request.data)
         if order_serializer.is_valid():
             order = order_serializer.save()  # Теперь пользователь будет сохранен
 
