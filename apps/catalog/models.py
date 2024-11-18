@@ -68,6 +68,7 @@ class Product(models.Model, ImageProcessingMixin):
     tags = models.ManyToManyField('Tag', related_name='products', verbose_name=_('Теги'), blank=True)
     promotional_products = models.ManyToManyField("PromotionalProduct", related_name='products', blank=True,
                                                   verbose_name='Акционные продукты')
+    similar_products = models.ManyToManyField('self', symmetrical=False, related_name='similar_to', blank=True, verbose_name='Похожие товары')
 
     def apply_discount(self):
         if self.discount_type == 'percent':

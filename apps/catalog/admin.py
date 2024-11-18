@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
 
-from .models import Category, Product, PromotionalProduct
+from .models import Category, Product, PromotionalProduct, Tag
 from .tasks import update_product_task
 
 
@@ -19,11 +19,19 @@ class CategoryAdmin(ModelAdmin):
     list_per_page = 10
 
 
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    pass
+
+
 @admin.register(Product)
 class ProductAdmin(ModelAdmin):
     list_display = ['title', 'category', 'price', 'quantity', 'created_at', 'is_new', 'is_popular']
-    search_fields = ['title', 'supplier_id',]
+    readonly_fields = ['created_at', 'discount_price']
+    exclude = ['promotional_products']
+    search_fields = ['title', 'supplier_id', ]
     list_filter = ['category', 'created_at']
+    filter_horizontal = ['tags', 'similar_products']
     list_per_page = 15
     list_editable = ['is_new', 'is_popular']
 

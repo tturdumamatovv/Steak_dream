@@ -10,6 +10,8 @@ from apps.catalog.models import Category, Product, PromotionalProduct
 from .filters import ProductFilter
 from .serializers import CategoryProductSerializer, ProductSerializer, CategoryOnlySerializer, PromotionalProductSerializer, UserPromotionalProductSerializer
 from ...authentication.models import UserPromotionalProduct
+from django.db.models import Q
+import random
 
 
 class ProductListByCategorySlugView(ListAPIView):
@@ -145,3 +147,31 @@ class UserPromotionalProductView(ListAPIView):
 
     def get_queryset(self):
         return UserPromotionalProduct.objects.filter(user=self.request.user)
+
+
+class SimilarProductsView(ListAPIView):
+    serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        product_id = self.kwargs['id']
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Product.objects.none()
+
+        similar_products = product.similar_products.all()
+
+        if similar_products.count() < 10:
+            additional_products = Product.objects.filter(category=product.category).exclude(id=product.id)
+            similar_products = similar_products | additional_products
+
+        if similar_products.count() < 10:
+            random_products = Product.objects.exclude(id__in=similar_products.values_list('id', flat=True))
+            similar_products = similar_products | random_products
+
+        return similar_products.distinct()[:10]
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
