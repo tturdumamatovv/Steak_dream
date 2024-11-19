@@ -371,20 +371,14 @@ class ChildCreateView(generics.CreateAPIView):
     serializer_class = ChildSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_serializer(self, *args, **kwargs):
+        # Поддержка списка объектов
+        if isinstance(self.request.data, list):
+            kwargs['many'] = True
+        return super().get_serializer(*args, **kwargs)
+
     def perform_create(self, serializer):
-        user = self.request.user
-        settings = BonusSystemSettings.objects.first()  # Получаем настройки
-
-        # Убедитесь, что пользователь не превышает лимит детей
-        if user.children.count() >= (settings.max_children if settings else 5):
-            raise serializers.ValidationError("Достигнуто максимальное количество детей.")
-
-        # Убедитесь, что возраст ребенка соответствует критериям
-        date_of_birth = serializer.validated_data.get('date_of_birth')
-        if date_of_birth and (timezone.now().year - date_of_birth.year) > (settings.max_age if settings else 18):
-            raise serializers.ValidationError("Возраст ребенка должен быть 18 лет или меньше.")
-
-        serializer.save(user=user)
+        serializer.save()
 
 
 class UserChildrenListView(generics.ListAPIView):

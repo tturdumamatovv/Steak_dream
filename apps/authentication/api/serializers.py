@@ -1,9 +1,10 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
+from django.utils import timezone
 
 from apps.authentication.models import (
     User,
-    UserAddress, BonusTransaction, Child, PromoCode
+    UserAddress, BonusTransaction, Child, PromoCode, BonusSystemSettings
 )
 from core import settings
 
@@ -129,11 +130,37 @@ class PromoCodeSerializer(serializers.ModelSerializer):
         exclude = ['users']
 
 
+class ChildListCreateSerializer(serializers.ListSerializer):
+    def validate(self, data):
+        # Общая валидация данных в списке
+        user = self.context['request'].user
+        settings = BonusSystemSettings.objects.first()
+        max_children = settings.max_children if settings else 5
+        max_age = settings.max_age if settings else 18
+
+        if user.children.count() + len(data) > max_children:
+            raise serializers.ValidationError(f"Максимальное количество детей: {max_children}.")
+
+        for child in data:
+            date_of_birth = child.get('date_of_birth')
+            if date_of_birth and (timezone.now().year - date_of_birth.year) > max_age:
+                raise serializers.ValidationError("Возраст ребенка должен быть 18 лет или меньше.")
+
+        return data
+
+    def create(self, validated_data):
+        # Создание нескольких объектов
+        user = self.context['request'].user
+        children = [Child(user=user, **item) for item in validated_data]
+        return Child.objects.bulk_create(children)
+
+
 class ChildSerializer(serializers.ModelSerializer):
     class Meta:
         model = Child
         fields = ['id', 'user', 'name', 'date_of_birth']
         read_only_fields = ['user']
+        list_serializer_class = ChildListCreateSerializer
 
 
 class ChildListSerializer(serializers.ModelSerializer):
